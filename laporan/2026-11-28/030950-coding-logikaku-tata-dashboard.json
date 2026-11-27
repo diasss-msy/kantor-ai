@@ -3,7 +3,10 @@
   "agen": "coding",
   "tugas": "Rombak penataan dashboard (Beranda) LogikaKu tanpa menghilangkan elemen",
   "dipesan_oleh": "syahrial",
-  "status": "butuh-input",
-  "ringkasan": "Dua tata letak dibuat: A bento (default) dan B kolom samping (?tata=b). Semua elemen tetap, tes alur/tema/gerak lulus. Menunggu Syahrial memilih A atau B.",
-  "hasil": ["Commit 689d532 di PR #9 repo LogikaKu", "coding/logikaku/potret/dashboard/pilihan-a-b.png"]
+  "status": "selesai",
+  "ringkasan": "Beranda disusun ulang dengan gaya panel mengikuti gambar referensi Syahrial (panel atas, panel Rangkaian belajar, panel Semua Modul). Semua elemen tetap. Terang, gelap, dan HP dicek; tes alur/tema/gerak lulus. Menunggu merge PR #9.",
+  "hasil": [
+    "Commit 7100e44 di PR #9 repo LogikaKu",
+    "coding/logikaku/potret/dashboard/gaya-panel.png"
+  ]
 }
