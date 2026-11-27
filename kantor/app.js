@@ -567,8 +567,8 @@ function bangunRuangan(lebar, dalam) {
     g.font = `800 78px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeText('KANTOR AI', w / 2, h / 2);
   });
   const nm = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.88), new THREE.MeshBasicMaterial({ map: neon }));
-  nm.rotation.y = Math.PI / 2; nm.position.set(-RX + 0.02, 3.6, rakZ + 4.8); dKiri.add(nm);
-  const lampuNeon = new THREE.PointLight(WARNA.sodium, 6, 6, 1.6); lampuNeon.position.set(-RX + 1, 3.6, rakZ + 4.8); scene.add(lampuNeon);
+  nm.rotation.y = Math.PI / 2; nm.position.set(-RX + 0.02, 3.6, rakZ + 6.2); dKiri.add(nm);
+  const lampuNeon = new THREE.PointLight(WARNA.sodium, 6, 6, 1.6); lampuNeon.position.set(-RX + 1, 3.6, rakZ + 6.2); scene.add(lampuNeon);
   // ---- dinding depan: jendela kedua
   const jx2 = 2.2;
   kotak(5.2, 0.12, 0.2, WARNA.gelap2, jx2, 1.55, RZ - 0.1, dDepan); kotak(5.2, 0.12, 0.2, WARNA.gelap2, jx2, 4.45, RZ - 0.1, dDepan);
@@ -637,7 +637,7 @@ function bangunRuangan(lebar, dalam) {
   jamM.rotation.y = -Math.PI / 2; jamM.position.set(RX - 0.06, 3.9, -0.6); dKanan.add(jamM);
 
   // ---- karpet di bawah meja departemen
-  const kz0 = -RZ + 6.2, kz1 = RZ - 2.2; // karpet di bawah baris meja departemen
+  const kz0 = -RZ + 8.0, kz1 = RZ - 2.2; // karpet di bawah baris meja departemen
   kotak(lebar - 4, 0.02, kz1 - kz0, 0x2a2350, 0, 0.025, (kz0 + kz1) / 2, scene, false).receiveShadow = true;
   kotak(lebar - 4.6, 0.022, kz1 - kz0 - 0.6, 0x342c62, 0, 0.03, (kz0 + kz1) / 2, scene, false).receiveShadow = true;
 
@@ -692,8 +692,8 @@ function bangunRuangan(lebar, dalam) {
   // tempat yang didatangi pegawai yang sedang jalan-jalan (arah = hadap tubuh, radian)
   tempatJalan = [
     { x: 2.2, z: RZ - 0.8, arah: 0 }, // jendela depan
-    { x: 0.6, z: -RZ + 5.8, arah: Math.PI }, // mengintip ruang manajer lewat kaca
-    { x: -RX + 1.3, z: -RZ + 7.4, arah: -Math.PI / 2 }, // neon KANTOR AI
+    { x: 0.6, z: -RZ + 7.6, arah: Math.PI }, // mengintip ruang manajer lewat kaca
+    { x: -RX + 1.3, z: -RZ + 8.8, arah: -Math.PI / 2 }, // neon KANTOR AI
     { x: RX - 1.3, z: RZ - 0.8, arah: Math.PI / 2 }, // dispenser
     { x: LORONG_X, z: 1.6, arah: Math.PI / 2 }, // papan tulis dari jauh
   ];
@@ -841,6 +841,16 @@ function bangunRuangManajer(r, meja) {
   tabung(0.1, 0.14, 0.12, 0xffcf7a, ax, 1.37, az - 0.3); // piala
   tabung(0.14, 0.06, 0.25, mat(0xffcf7a, { m: 0.8, r: 0.3 }), ax, 1.55, az - 0.3);
   kotak(0.3, 0.38, 0.05, 0xe8dcc0, ax, 1.5, az + 0.3).rotation.y = -0.4; // bingkai foto
+  // sofa tamu di dinding belakang dengan meja samping dan lampu baca
+  const fx = x1 - 3.2, fz = z0 + 0.75;
+  const mSofaM = mat(0x7a3f4c, { r: 0.95 });
+  kotak(2.4, 0.42, 0.85, mSofaM, fx, 0.3, fz);
+  kotak(2.4, 0.7, 0.22, mSofaM, fx, 0.7, fz - 0.33);
+  for (const s of [-1, 1]) kotak(0.22, 0.58, 0.85, mSofaM, fx + s * 1.2, 0.45, fz);
+  kotak(0.45, 0.32, 0.12, 0xffcf7a, fx - 0.5, 0.66, fz - 0.15).rotation.x = -0.3;
+  kotak(0.5, 0.5, 0.5, WARNA.meja, fx + 1.75, 0.25, fz);
+  tabung(0.02, 0.02, 1.5, WARNA.krem, fx + 1.75, 1.25, fz);
+  tabung(0.12, 0.22, 0.25, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.7 }), fx + 1.75, 2.0, fz);
   // tanaman besar di pojok
   tabung(0.3, 0.24, 0.55, 0xd9532b, x1 - 0.45, 0.28, z1 - 0.45);
   bola(0.45, 0x4f8a6b, x1 - 0.45, 0.95, z1 - 0.45); bola(0.3, 0x3f7a5e, x1 - 0.3, 1.3, z1 - 0.55);
