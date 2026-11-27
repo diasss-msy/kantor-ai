@@ -69,21 +69,24 @@ export function tautan(teks) {
 }
 
 /**
- * Posisi meja: manajer di baris belakang, karyawan lain tiga per baris di depannya.
+ * Posisi meja: manajer di baris belakang, karyawan lain di depannya
+ * (empat sebaris kalau tepat empat, selain itu tiga per baris).
  * Hasil: { meja: [{ id, x, z }], lebar, dalam } dalam satuan dunia.
  */
 export function tataMeja(karyawan) {
   const manajer = karyawan.filter((k) => k.id === 'manajer');
   const lain = karyawan.filter((k) => k.id !== 'manajer');
-  const baris = Math.max(1, Math.ceil(lain.length / 3));
+  const perBaris = lain.length === 4 ? 4 : 3; // empat departemen muat sebaris
+  const jarak = perBaris === 4 ? 3.4 : 4.2;
+  const baris = Math.max(1, Math.ceil(lain.length / perBaris));
   const dalam = 6 + baris * 4;
   const meja = [];
   let z0 = -dalam / 2 + 2.6;
   for (const k of manajer) meja.push({ id: k.id, x: 0, z: z0 });
   z0 += manajer.length ? 3.9 : 1.2;
   lain.forEach((k, i) => {
-    const r = Math.floor(i / 3), sisa = Math.min(3, lain.length - r * 3), c = i % 3;
-    meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * 4.2, z: z0 + r * 4 });
+    const r = Math.floor(i / perBaris), sisa = Math.min(perBaris, lain.length - r * perBaris), c = i % perBaris;
+    meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * jarak, z: z0 + r * 4 });
   });
   return { meja, lebar: 14, dalam };
 }
