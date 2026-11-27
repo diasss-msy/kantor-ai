@@ -90,3 +90,31 @@ export function tataMeja(karyawan) {
   });
   return { meja, lebar: 14, dalam };
 }
+
+/** Lorong samping kiri dan kanan (koordinat x) yang bebas meja, untuk berjalan. */
+export const LORONG_X = 5.7;
+
+/**
+ * Rute berjalan dari kursi ke tujuan: mundur ke lorong di belakang meja,
+ * menyusuri lorong itu ke lorong samping (kiri atau kanan, yang lebih dekat
+ * ke tujuan), lalu ke tujuan. Hasil: daftar titik { x, z } diawali kursi.
+ */
+export function rencanaRute(kursi, tujuan) {
+  const lorongZ = kursi.z - 1.05; // tepat di belakang sandaran kursi
+  const cx = tujuan.x >= 0 ? LORONG_X : -LORONG_X;
+  const titik = [
+    { x: kursi.x, z: kursi.z },
+    { x: kursi.x + 0.6, z: kursi.z }, // geser ke samping kursi dulu
+    { x: kursi.x + 0.6, z: lorongZ },
+    { x: cx, z: lorongZ },
+    { x: cx, z: tujuan.z },
+    { x: tujuan.x, z: tujuan.z },
+  ];
+  // buang titik ganda berurutan
+  return titik.filter((p, i) => i === 0 || Math.hypot(p.x - titik[i - 1].x, p.z - titik[i - 1].z) > 1e-6);
+}
+
+/** Pegawai menganggur (boleh jalan-jalan) kalau tidak sedang bekerja atau menunggu input. */
+export function menganggur(status) {
+  return status === 'kosong' || status === 'selesai';
+}
