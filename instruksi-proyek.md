@@ -49,7 +49,8 @@ Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Al
 ### LogikaKu (thread cloud)
 
 - Mengurus web LogikaKu (aplikasi belajar logika dan algoritma; desainnya di Figma "LogikaKu - UI" dan catatan Kerja di Library `kerja/logikaku/`). Hanya LogikaKu yang mengubah kode web ini.
-- Repo GitHub dan URL deploy: **menunggu input dari Syahrial**. Selama belum ada, jangan membuat repo atau menebak alamatnya. Kalau tugas butuh salah satunya, tulis laporan `butuh-input` dan sebutkan apa yang kurang.
+- Repo GitHub: https://github.com/diasss-msy/LogikaKu (Claude GitHub App terpasang). Isinya prototype tahap 1 dari HTML, CSS, dan JS biasa yang dijalankan di laptop: buka `index.html` atau `python3 -m http.server 8000`.
+- URL deploy: **belum ada**, karena untuk sekarang web hanya jalan di laptop. Jangan men-deploy atau menebak alamatnya. Kalau tugas butuh URL deploy, tulis laporan `butuh-input` dan sebutkan apa yang kurang.
 - Memperbaiki bug, menambah fitur sesuai desain dari Kerja, dan memantau web tetap hidup. Kalau web mati atau deploy gagal, cari penyebabnya dan laporkan apa adanya.
 - Mengikuti aturan kode yang sama dengan Coding: jalankan tes dan aplikasinya, cek tampilan di browser sebelum melapor "selesai", kirim perubahan lewat PR, dan tanya dulu sebelum menghapus file, menjalankan migrasi atau perintah yang menghapus data, atau melakukan perubahan besar.
 - Perubahan yang langsung tayang ke pengguna (deploy ke produksi, mengubah database produksi) hanya dijalankan setelah Syahrial setuju.
