@@ -41,6 +41,15 @@ Contoh `laporan/2026-11-27/091200-coding-login-jwt.json`:
 
 ## Cara commit
 
+Semua commit di repo ini, dari thread cloud maupun thread lokal, memakai identitas Syahrial sebagai author. Atur sebelum commit pertama:
+
+```bash
+git config user.name "diasss-msy"
+git config user.email "221968334+diasss-msy@users.noreply.github.com"
+```
+
+Cek dengan `git log -1 --format='%an <%ae>'` setelah commit. Kalau author-nya salah dan commit belum di-push, perbaiki dengan `git commit --amend --reset-author --no-edit`. Commit yang sudah di-push jangan diubah.
+
 1. Jalankan pemeriksa dulu: `python tools/cek_laporan.py`. Harus keluar tanpa pesan galat (kode 0).
 2. Commit **langsung ke `main`**. Ini hanya berlaku untuk file di folder `laporan/`. Perubahan lain di repo ini tetap lewat PR.
 3. Pesan commit: `laporan: <agen> <slug>`, misalnya `laporan: coding login-jwt`.
