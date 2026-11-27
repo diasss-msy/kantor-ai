@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T21:33:04+07:00",
+  "agen": "logikaku",
+  "tugas": "Tambah beberapa animasi di website LogikaKu untuk menambah rasa interaksi",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Animasi umpan balik kuis dan latihan, saklar dan LED Lab Gerbang, sorot pseudocode, hover kartu, transisi ganti tema, dan kartu hero landing yang melayang. Semua mengikuti aturan gerak design system: jawaban salah tanpa goyang, dan semuanya mati dengan Kurangi animasi. Uji gerak 15 cek, uji alur 25 cek, dan uji tema 38 cek lulus tanpa galat JS.",
+  "hasil": ["PR #4 di repo LogikaKu: https://github.com/diasss-msy/LogikaKu/pull/4", "Library coding/logikaku/potret/animasi.gif"]
+}
