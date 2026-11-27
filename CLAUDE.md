@@ -46,4 +46,8 @@ Contoh `laporan/2026-11-27/091200-coding-login-jwt.json`:
 3. Pesan commit: `laporan: <agen> <slug>`, misalnya `laporan: coding login-jwt`.
 4. Kalau push ditolak karena ada commit baru, jalankan `git pull --rebase` lalu push lagi. Jangan memakai force push.
 
+## Laporan bersifat publik
+
+Laporan ditampilkan di kantor 3D lewat GitHub Pages, jadi anggap setiap laporan bisa dibaca siapa saja. Jangan menulis password, token, isi `.env`, kunci API, atau data pribadi orang lain di laporan. Tulis "kredensial tidak ikut" kalau perlu menyebutnya, bukan isinya.
+
 Jangan mengubah atau menghapus laporan milik thread lain.

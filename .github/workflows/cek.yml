@@ -12,6 +12,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - run: pip install pytest
       - run: python -m pytest -q
       - run: python tools/cek_laporan.py
+      - run: python tools/bangun_data.py . _site/data.json
+      - run: node --test kantor/status.test.mjs

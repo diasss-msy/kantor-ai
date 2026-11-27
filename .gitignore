@@ -1,2 +1,4 @@
 __pycache__/
 .pytest_cache/
+_site/
+kantor/data.json
