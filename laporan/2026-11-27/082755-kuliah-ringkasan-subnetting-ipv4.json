@@ -1,0 +1,12 @@
+{
+  "waktu": "2026-11-27T08:27:55+07:00",
+  "agen": "kuliah",
+  "tugas": "Buat ringkasan 1 halaman tentang subnetting IPv4 dengan 3 sumber",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Ringkasan 1 halaman (subnet mask, notasi CIDR, rumus host, contoh 192.168.10.0/24 dibagi 4 subnet) dengan 3 sumber yang sudah dibuka dan dicek: Cisco Tech Note 13788, RFC 950, dan RFC 4632. Header nama dan NIM ada di halaman. Dibuat dalam .docx dan .pdf.",
+  "hasil": [
+    "Library: kuliah/ringkasan-subnetting-ipv4.docx",
+    "Library: kuliah/ringkasan-subnetting-ipv4.pdf"
+  ]
+}
