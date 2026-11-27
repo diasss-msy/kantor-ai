@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kantor AI</title>
+<meta name="description" content="Kantor 3D tim agen AI: siapa sedang bekerja dan laporan setiap tugas.">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
+</head>
+<body>
+<canvas id="adegan" aria-label="Kantor 3D. Klik karakter untuk melihat laporannya."></canvas>
+
+<header class="atas">
+  <div class="judul">
+    <h1>Kantor AI</h1>
+    <p id="info-data">Memuat laporan…</p>
+  </div>
+  <div class="kontrol">
+    <label class="pilih-tanggal">
+      <span class="sr">Tanggal</span>
+      <select id="tanggal"></select>
+    </label>
+  </div>
+  <ul class="ringkas" id="ringkas" aria-label="Jumlah laporan hari ini per status"></ul>
+</header>
+
+<div class="petunjuk" id="petunjuk">Klik karakter untuk melihat laporannya</div>
+
+<footer class="timelapse">
+  <button id="putar" type="button" aria-label="Putar timelapse">▶</button>
+  <input id="jam" type="range" min="0" max="86399" step="60" value="86399" aria-label="Jam">
+  <output id="label-jam" for="jam">sepanjang hari</output>
+</footer>
+
+<aside class="panel" id="panel" hidden aria-labelledby="panel-nama">
+  <div class="panel-kepala">
+    <div>
+      <p class="panel-dept" id="panel-dept"></p>
+      <h2 id="panel-nama"></h2>
+      <p class="panel-tugas" id="panel-tugas"></p>
+    </div>
+    <button id="tutup" type="button" aria-label="Tutup panel">×</button>
+  </div>
+  <ol class="daftar" id="daftar"></ol>
+</aside>
+
+<div class="galat" id="galat" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
