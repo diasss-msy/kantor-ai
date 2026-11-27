@@ -14,5 +14,5 @@ def test_panjang_maksimal():
 def test_memuat_aturan_penting():
     teks = baca()
     for wajib in ["[Kuliah]", "[Coding]", "[Kerja]", "255150600111027", ".docx",
-                  ".pdf", "2 thread", "kantor-ai", "Work locally"]:
+                  ".pdf", "2 thread", "kantor-ai", "Work locally", "publik"]:
         assert wajib in teks, wajib

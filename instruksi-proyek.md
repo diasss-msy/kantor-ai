@@ -49,6 +49,7 @@ Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Al
 - Laporan tetap wajib ditulis kalau tugas gagal atau butuh input dari Syahrial. Tulis status dan ringkasannya apa adanya.
 - Status `selesai` hanya dipakai kalau ada bukti hasil (PR, file di Library, link desain) yang dicantumkan di `hasil`.
 - Jalankan `python tools/cek_laporan.py` sebelum push laporan.
+- Laporan bersifat publik (ditampilkan di kantor 3D lewat GitHub Pages). Jangan menulis password, token, isi `.env`, kunci API, atau data pribadi orang lain di laporan.
 
 ## 5. Kalau sesuatu tidak bisa dijangkau
 
