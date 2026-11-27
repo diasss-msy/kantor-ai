@@ -176,7 +176,7 @@ function bangunKota(lebar, dalam, dinding, r) {
   bola(0.18, mMerah, 0, 6.1, 0, antena); lampuAtap.push(mMerah);
 
   // ---- jalan: blok 19 x 19 dengan jalan selebar 8 di antaranya
-  const P = 27, N = 3, BATAS = (N + 0.5) * P;
+  const P = 33, N = 3, BATAS = (N + 0.5) * P, B = P - 8; // blok B x B, jalan selebar 8
   kotak(420, 1, 420, mat(0x161d38, { r: 1 }), 0, TANAH - 0.5, 0); // aspal
   const mTrotoar = mat(0x232c4f, { r: 0.95 });
   const mMarka = mat(0xe8dcc0, { e: 0xe8dcc0, ei: 0.25 });
@@ -199,13 +199,13 @@ function bangunKota(lebar, dalam, dinding, r) {
   }
   for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++) {
     const cx = i * P, cz = j * P;
-    kotak(19, 0.25, 19, mTrotoar, cx, TANAH + 0.12, cz); // trotoar blok
-    kotak(19.1, 0.05, 19.1, mKerb, cx, TANAH + 0.03, cz, scene, false); // bibir trotoar
+    kotak(B, 0.25, B, mTrotoar, cx, TANAH + 0.12, cz); // trotoar blok
+    kotak(B + 0.1, 0.05, B + 0.1, mKerb, cx, TANAH + 0.03, cz, scene, false); // bibir trotoar
     // lampu jalan di tengah keempat sisi blok, bangku di kiri-kanannya
     for (const [sx, sz] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
-      const lx = cx + (sx ? sx * 9.1 : 0), lz = cz + (sz ? sz * 9.1 : 0);
-      for (const geser of [-4.2, 4.2]) bangku(lx + (sz ? geser : 0) - sx * 0.35, lz + (sx ? geser : 0) - sz * 0.35, Math.atan2(sx, sz));
-      tanamanPot(lx + (sz ? 6.8 : 0) - sx * 0.3, lz + (sx ? 6.8 : 0) - sz * 0.3);
+      const lx = cx + (sx ? sx * (B / 2 - 0.4) : 0), lz = cz + (sz ? sz * (B / 2 - 0.4) : 0);
+      for (const geser of [-5.5, 5.5]) bangku(lx + (sz ? geser : 0) - sx * 0.35, lz + (sx ? geser : 0) - sz * 0.35, Math.atan2(sx, sz));
+      tanamanPot(lx + (sz ? 8.8 : 0) - sx * 0.3, lz + (sx ? 8.8 : 0) - sz * 0.3);
       tabung(0.06, 0.08, 3.2, 0x3a4566, lx, TANAH + 1.85, lz);
       bola(0.18, mLampuJalan, lx, TANAH + 3.5, lz);
       const s = new THREE.Mesh(new THREE.CircleGeometry(1.8, 20), mSinar);
@@ -300,7 +300,7 @@ function bangunKota(lebar, dalam, dinding, r) {
   /** Tinggi puncak maksimum supaya tidak menutupi ruangan dari sudut kamera mana pun. */
   const maksPuncak = (x, z, w, d) => {
     const dx = Math.max(0, Math.abs(x) - w / 2), dz = Math.max(0, Math.abs(z) - d / 2);
-    return 0.45 * Math.hypot(dx, dz) - 9;
+    return 0.45 * Math.hypot(dx, dz) - 11;
   };
   const kotakGedung = (w, h, d, x, y0, z, i) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [
@@ -448,20 +448,20 @@ function bangunKota(lebar, dalam, dinding, r) {
       const v = RITEL.get(`${i},${j}`);
       // sisi toko menghadap jalan yang paling dekat kamera bawaan (+x/+z) bila mungkin
       const sx = (v % 2 === 0) ? 1 : -1;
-      minimarket(cx + sx * 5.2, cz - 4.4, sx, 0, v * 2);
-      minimarket(cx + sx * 5.2, cz + 4.4, sx, 0, v * 2 + 1);
-      for (const sz of [-1, 1]) gedung(cx - sx * 4.3, cz + sz * 4.3, 5.5 + r(), 5.5 + r());
+      minimarket(cx + sx * 7.4, cz - 5.6, sx, 0, v * 2);
+      minimarket(cx + sx * 7.4, cz + 5.6, sx, 0, v * 2 + 1);
+      for (const sz of [-1, 1]) gedung(cx - sx * 5.8, cz + sz * 5.8, 7.5 + r(), 7.5 + r());
       const pz = v % 3 === 0 ? -1 : 1;
-      reklame(cx + sx * 8.4, cz + pz * 8.4, Math.atan2(sx, pz), v);
+      reklame(cx + sx * 11.4, cz + pz * 11.4, Math.atan2(sx, pz), v);
       continue;
     }
     const n = r();
-    if (n < 0.35) gedung(cx, cz, 10 + r() * 3, 10 + r() * 3);
+    if (n < 0.35) gedung(cx, cz, 13 + r() * 4, 13 + r() * 4);
     else if (n < 0.7) {
       const sb = r() < 0.5;
-      for (const s of [-1, 1]) gedung(cx + (sb ? s * 4.3 : 0), cz + (sb ? 0 : s * 4.3), sb ? 6 : 13, sb ? 13 : 6);
+      for (const s of [-1, 1]) gedung(cx + (sb ? s * 5.6 : 0), cz + (sb ? 0 : s * 5.6), sb ? 8 : 17, sb ? 17 : 8);
     } else for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-      if (r() < 0.8) gedung(cx + sx * 4.3, cz + sz * 4.3, 5.5 + r(), 5.5 + r());
+      if (r() < 0.8) gedung(cx + sx * 5.8, cz + sz * 5.8, 7.5 + r(), 7.5 + r());
     }
   }
 
@@ -490,7 +490,7 @@ function bangunRuangan(lebar, dalam) {
   scene.add(new THREE.HemisphereLight(0x6f8fe8, 0x1b2a4e, 1.1));
   const bulan = new THREE.DirectionalLight(0x7fa0ff, 0.55);
   bulan.position.set(-10, 14, -8); bulan.castShadow = true;
-  Object.assign(bulan.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16 });
+  Object.assign(bulan.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20 });
   bulan.shadow.mapSize.set(2048, 2048); scene.add(bulan);
   const isi = new THREE.DirectionalLight(0x8fa8ff, 0.6); isi.position.set(14, 10, 14); scene.add(isi);
   const tepi = new THREE.DirectionalLight(0xb8c8ff, 0.9); tepi.position.set(-4, 8, -14); scene.add(tepi);
@@ -509,7 +509,7 @@ function bangunRuangan(lebar, dalam) {
   scene.add(dBelakang, dKiri, dDepan, dKanan, ...Object.values(pendek));
   const LW = lebar + 0.6, TP = 0.55; // lebar dinding depan/belakang (menutup sudut), tinggi tembok pendek
   // dinding belakang dan depan berlubang jendela (kaca tembus pandang ke kota)
-  const JB = { x: -1.2, w: 6 }, JD = { x: 2.2, w: 5 }, JY0 = 1.6, JY1 = 4.4;
+  const JB = { x: -2.5, w: 6 }, JD = { x: 2.2, w: 5 }, JY0 = 1.6, JY1 = 4.4;
   const mKaca = new THREE.MeshStandardMaterial({ color: 0x9fc4ff, transparent: true, opacity: 0.12, roughness: 0.05, metalness: 0.2, depthWrite: false });
   const dindingJendela = (j, z, induk) => {
     const kiri = j.x - j.w / 2 + LW / 2, kanan = LW / 2 - (j.x + j.w / 2);
@@ -540,7 +540,7 @@ function bangunRuangan(lebar, dalam) {
 
   // jendela belakang: bingkai dan hujan di kaca
   const r = acak(27);
-  const jx = -1.2;
+  const jx = JB.x;
   kotak(6.2, 0.12, 0.2, WARNA.gelap2, jx, 1.55, -RZ + 0.1, dBelakang); kotak(6.2, 0.12, 0.2, WARNA.gelap2, jx, 4.45, -RZ + 0.1, dBelakang);
   for (const dx of [-3.05, -1, 1, 3.05]) kotak(0.1, 2.9, 0.18, WARNA.gelap2, jx + dx, 3.0, -RZ + 0.1, dBelakang);
   // garis hujan di kaca (bergerak)
@@ -567,8 +567,8 @@ function bangunRuangan(lebar, dalam) {
     g.font = `800 78px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeText('KANTOR AI', w / 2, h / 2);
   });
   const nm = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.88), new THREE.MeshBasicMaterial({ map: neon }));
-  nm.rotation.y = Math.PI / 2; nm.position.set(-RX + 0.02, 3.6, rakZ + 3.6); dKiri.add(nm);
-  const lampuNeon = new THREE.PointLight(WARNA.sodium, 6, 6, 1.6); lampuNeon.position.set(-RX + 1, 3.6, rakZ + 3.6); scene.add(lampuNeon);
+  nm.rotation.y = Math.PI / 2; nm.position.set(-RX + 0.02, 3.6, rakZ + 4.8); dKiri.add(nm);
+  const lampuNeon = new THREE.PointLight(WARNA.sodium, 6, 6, 1.6); lampuNeon.position.set(-RX + 1, 3.6, rakZ + 4.8); scene.add(lampuNeon);
   // ---- dinding depan: jendela kedua
   const jx2 = 2.2;
   kotak(5.2, 0.12, 0.2, WARNA.gelap2, jx2, 1.55, RZ - 0.1, dDepan); kotak(5.2, 0.12, 0.2, WARNA.gelap2, jx2, 4.45, RZ - 0.1, dDepan);
@@ -637,11 +637,12 @@ function bangunRuangan(lebar, dalam) {
   jamM.rotation.y = -Math.PI / 2; jamM.position.set(RX - 0.06, 3.9, -0.6); dKanan.add(jamM);
 
   // ---- karpet di bawah meja departemen
-  kotak(11.2, 0.02, 6.6, 0x2a2350, 0, 0.025, 1.5, scene, false).receiveShadow = true;
-  kotak(10.6, 0.022, 6.0, 0x342c62, 0, 0.03, 1.5, scene, false).receiveShadow = true;
+  const kz0 = -RZ + 6.2, kz1 = RZ - 2.2; // karpet di bawah baris meja departemen
+  kotak(lebar - 4, 0.02, kz1 - kz0, 0x2a2350, 0, 0.025, (kz0 + kz1) / 2, scene, false).receiveShadow = true;
+  kotak(lebar - 4.6, 0.022, kz1 - kz0 - 0.6, 0x342c62, 0, 0.03, (kz0 + kz1) / 2, scene, false).receiveShadow = true;
 
   // ---- pojok santai: sofa dan meja kopi
-  const sx = -4.9, sz = RZ - 0.75;
+  const sx = -RX + 3.5, sz = RZ - 0.75;
   const mSofa = mat(0x5b3f7a, { r: 0.95 });
   kotak(2.6, 0.45, 0.9, mSofa, sx, 0.32, sz);
   kotak(2.6, 0.75, 0.25, mSofa, sx, 0.75, sz + 0.35);
@@ -691,8 +692,8 @@ function bangunRuangan(lebar, dalam) {
   // tempat yang didatangi pegawai yang sedang jalan-jalan (arah = hadap tubuh, radian)
   tempatJalan = [
     { x: 2.2, z: RZ - 0.8, arah: 0 }, // jendela depan
-    { x: 0.6, z: -RZ + 4.8, arah: Math.PI }, // mengintip ruang manajer lewat kaca
-    { x: -RX + 1.3, z: -0.8, arah: -Math.PI / 2 }, // neon KANTOR AI
+    { x: 0.6, z: -RZ + 5.8, arah: Math.PI }, // mengintip ruang manajer lewat kaca
+    { x: -RX + 1.3, z: -RZ + 7.4, arah: -Math.PI / 2 }, // neon KANTOR AI
     { x: RX - 1.3, z: RZ - 0.8, arah: Math.PI / 2 }, // dispenser
     { x: LORONG_X, z: 1.6, arah: Math.PI / 2 }, // papan tulis dari jauh
   ];
@@ -1281,7 +1282,7 @@ function ukurUlang() {
   const W = innerWidth, H = innerHeight, asp = W / H;
   renderer.setSize(W, H, false);
   const butuh = (tata.lebar + tata.dalam) * 0.72; // lebar diagonal ruangan
-  const vs = Math.max(tata.dalam * 0.95, butuh / asp / 1.85);
+  const vs = Math.max(tata.dalam * 0.78, butuh / asp / 2.1);
   kamera.left = -vs * asp; kamera.right = vs * asp; kamera.top = vs; kamera.bottom = -vs;
   kamera.updateProjectionMatrix();
 }

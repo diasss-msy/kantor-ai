@@ -72,15 +72,15 @@ test('tata meja: manajer di belakang, lainnya tiga per baris', () => {
   const t = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja')]);
   const m = Object.fromEntries(t.meja.map((d) => [d.id, d]));
   assert.ok(m.manajer.z < m.coding.z);
-  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [-4.2, 0, 4.2]);
+  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [-5, 0, 5]);
   const t2 = tataMeja([k('manajer'), ...'abcde'.split('').map(k)]);
   assert.equal(t2.meja.length, 6);
   assert.ok(t2.dalam > t.dalam);
-  assert.deepEqual(t2.meja.slice(4).map((d) => d.x), [-2.1, 2.1]);
+  assert.deepEqual(t2.meja.slice(4).map((d) => d.x), [-2.5, 2.5]);
   const t3 = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja'), k('maintenance')]);
   const lain = t3.meja.slice(1);
   assert.equal(new Set(lain.map((d) => d.z)).size, 1, 'empat departemen dalam satu baris');
-  assert.deepEqual(lain.map((d) => +d.x.toFixed(2)), [-5.1, -1.7, 1.7, 5.1]);
+  assert.deepEqual(lain.map((d) => +d.x.toFixed(2)), [-6.3, -2.1, 2.1, 6.3]);
   assert.equal(t3.dalam, t.dalam);
 });
 
