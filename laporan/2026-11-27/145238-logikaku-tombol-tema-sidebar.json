@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T14:52:38+07:00",
+  "agen": "logikaku",
+  "tugas": "Tambah tombol ganti mode terang/gelap dan buat sidebar tidak ikut tergulir saat mentok",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Tombol bulan/matahari ada di top bar, sidebar, landing, dan halaman akun, pilihannya tersimpan dan ikut di Profil. Sidebar memakai overscroll-behavior contain sehingga guliran yang mentok tidak menggulir halaman. Uji Playwright 38 cek baru dan 25 cek alur lama lulus tanpa galat JS.",
+  "hasil": ["PR #2 di repo LogikaKu: https://github.com/diasss-msy/LogikaKu/pull/2"]
+}
