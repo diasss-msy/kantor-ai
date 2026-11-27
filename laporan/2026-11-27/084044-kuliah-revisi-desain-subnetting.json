@@ -1,0 +1,12 @@
+{
+  "waktu": "2026-11-27T08:40:44+07:00",
+  "agen": "kuliah",
+  "tugas": "Perbaiki desain ringkasan subnetting IPv4 memakai skill theme-factory",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Desain ringkasan dibuat ulang dengan tema Ocean Depths dari skill theme-factory (pilihan Syahrial): warna navy dan teal, font DejaVu Sans. Isi dan 3 sumber tidak berubah, tetap 1 halaman dengan header nama dan NIM. File .docx dan .pdf lama di Library ditimpa versi baru.",
+  "hasil": [
+    "Library: kuliah/ringkasan-subnetting-ipv4.docx",
+    "Library: kuliah/ringkasan-subnetting-ipv4.pdf"
+  ]
+}
