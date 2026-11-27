@@ -51,6 +51,7 @@ const kamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 300);
 const kontrol = new OrbitControls(kamera, kanvas);
 kontrol.enablePan = false;
 kontrol.enableDamping = true;
+kontrol.rotateSpeed = 1.6; // satu kali geser cukup untuk berputar jauh
 kontrol.minZoom = 0.7;
 kontrol.maxZoom = 2.6;
 kontrol.minPolarAngle = 0.7;
@@ -115,13 +116,31 @@ function bangunRuangan(lebar, dalam) {
   kotak(lebar + 0.2, 1.4, dalam + 0.2, mat(WARNA.gelap, { r: 0.9 }), 0, -0.95, 0);
   kotak(lebar + 0.24, 0.06, dalam + 0.24, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.6 }), 0, -0.25, 0, scene, false);
   for (let z = -RZ + 0.35; z < RZ; z += 0.7) kotak(lebar, 0.02, 0.04, WARNA.lantaiGaris, 0, 0.01, z, scene, false);
-  // dinding: belakang (z = -RZ) dan kiri (x = -RX), masing-masing dengan isinya.
-  // Dinding disembunyikan saat kamera berada di baliknya, supaya ruangan tetap
-  // terlihat ketika diputar 360 derajat.
+  // dinding di empat sisi, masing-masing dengan isinya. Dinding yang berada di
+  // antara kamera dan ruangan diganti tembok pendek (potongan diorama), supaya
+  // ruangan tetap terlihat ketika diputar 360 derajat.
   const dBelakang = new THREE.Group(), dKiri = new THREE.Group();
-  scene.add(dBelakang, dKiri);
-  kotak(lebar, 5, 0.3, WARNA.dinding, 0, 2.5, -RZ - 0.15, dBelakang);
+  const dDepan = new THREE.Group(), dKanan = new THREE.Group();
+  const pendek = { belakang: new THREE.Group(), kiri: new THREE.Group(), depan: new THREE.Group(), kanan: new THREE.Group() };
+  scene.add(dBelakang, dKiri, dDepan, dKanan, ...Object.values(pendek));
+  const LW = lebar + 0.6, TP = 0.55; // lebar dinding depan/belakang (menutup sudut), tinggi tembok pendek
+  kotak(LW, 5, 0.3, WARNA.dinding, 0, 2.5, -RZ - 0.15, dBelakang);
   kotak(0.3, 5, dalam, WARNA.dinding2, -RX - 0.15, 2.5, 0, dKiri);
+  kotak(LW, 5, 0.3, WARNA.dinding, 0, 2.5, RZ + 0.15, dDepan);
+  kotak(0.3, 5, dalam, WARNA.dinding2, RX + 0.15, 2.5, 0, dKanan);
+  const mTepi = mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.5 });
+  for (const [g, w, d, x, z] of [
+    [pendek.belakang, LW, 0.3, 0, -RZ - 0.15], [pendek.depan, LW, 0.3, 0, RZ + 0.15],
+    [pendek.kiri, 0.3, dalam, -RX - 0.15, 0], [pendek.kanan, 0.3, dalam, RX + 0.15, 0],
+  ]) {
+    kotak(w, TP, d, WARNA.dinding, x, TP / 2, z, g);
+    kotak(w + 0.02, 0.04, d + 0.02, mTepi, x, TP + 0.02, z, g, false);
+  }
+  // list bawah (plint) di sepanjang dinding penuh
+  kotak(lebar, 0.18, 0.06, WARNA.gelap2, 0, 0.09, -RZ + 0.03, dBelakang);
+  kotak(lebar, 0.18, 0.06, WARNA.gelap2, 0, 0.09, RZ - 0.03, dDepan);
+  kotak(0.06, 0.18, dalam, WARNA.gelap2, -RX + 0.03, 0.09, 0, dKiri);
+  kotak(0.06, 0.18, dalam, WARNA.gelap2, RX - 0.03, 0.09, 0, dKanan);
 
   // jendela dengan kota dan hujan
   const r = acak(27);
@@ -169,11 +188,114 @@ function bangunRuangan(lebar, dalam) {
   const nm = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.88), new THREE.MeshBasicMaterial({ map: neon }));
   nm.rotation.y = Math.PI / 2; nm.position.set(-RX + 0.02, 3.6, rakZ + 3.6); dKiri.add(nm);
   const lampuNeon = new THREE.PointLight(WARNA.sodium, 6, 6, 1.6); lampuNeon.position.set(-RX + 1, 3.6, rakZ + 3.6); scene.add(lampuNeon);
+  // ---- dinding depan: jendela kedua
+  const jx2 = 2.2;
+  const jendela2 = new THREE.Mesh(new THREE.PlaneGeometry(5, 2.8), new THREE.MeshBasicMaterial({ map: kota }));
+  jendela2.rotation.y = Math.PI; jendela2.position.set(jx2, 3.0, RZ - 0.02); dDepan.add(jendela2);
+  kotak(5.2, 0.12, 0.2, WARNA.gelap2, jx2, 1.55, RZ - 0.1, dDepan); kotak(5.2, 0.12, 0.2, WARNA.gelap2, jx2, 4.45, RZ - 0.1, dDepan);
+  for (const dx of [-2.55, 0, 2.55]) kotak(0.1, 2.9, 0.18, WARNA.gelap2, jx2 + dx, 3.0, RZ - 0.1, dDepan);
+  kotak(5.4, 0.08, 0.35, WARNA.krem, jx2, 1.5, RZ - 0.2, dDepan); // ambang jendela
+  for (let i = 0; i < 30; i++) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.015, 0.25), mHujan);
+    m.rotation.y = Math.PI; m.rotation.z = -0.2;
+    m.position.set(jx2 - 2.4 + r() * 4.8, 1.7 + r() * 2.6, RZ - 0.04);
+    dDepan.add(m); hujanKaca.push(m);
+  }
+  // kaktus kecil di ambang jendela
+  for (const dx of [-1.6, 1.4]) {
+    tabung(0.12, 0.1, 0.18, 0xd9532b, jx2 + dx, 1.63, RZ - 0.2, dDepan);
+    tabung(0.07, 0.07, 0.25, 0x4f8a6b, jx2 + dx, 1.84, RZ - 0.2, dDepan);
+  }
+
+  // ---- dinding kanan: pintu, keset, tanda MASUK, papan tulis, jam dinding
+  const pz = 3.6, px = RX - 0.04;
+  kotak(0.1, 3.0, 1.7, WARNA.gelap2, px, 1.5, pz, dKanan); // kusen
+  kotak(0.08, 2.8, 1.4, 0x8a5a3c, px - 0.03, 1.4, pz, dKanan); // daun pintu kayu
+  for (const dy of [0.75, 2.0]) kotak(0.03, 0.9, 1.1, 0x7a4e33, px - 0.08, dy, pz, dKanan);
+  bola(0.06, WARNA.krem, px - 0.12, 1.35, pz - 0.5, dKanan);
+  const celah = kotak(0.02, 0.04, 1.4, mat(WARNA.sodium, { e: WARNA.sodium, ei: 2 }), px - 0.06, 0.02, pz, dKanan, false);
+  celah.castShadow = false;
+  const masuk = teksturKanvas(256, 96, (g, w, h) => {
+    g.fillStyle = '#0d2a1c'; g.fillRect(0, 0, w, h);
+    g.shadowColor = '#6dff9a'; g.shadowBlur = 16; g.fillStyle = '#9dffbb';
+    g.font = `800 52px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('MASUK', w / 2, h / 2 + 2);
+  });
+  const tMasuk = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.34), new THREE.MeshBasicMaterial({ map: masuk }));
+  tMasuk.rotation.y = -Math.PI / 2; tMasuk.position.set(RX - 0.03, 3.3, pz); dKanan.add(tMasuk);
+  const lampuPintu = new THREE.PointLight(0x6dff9a, 1.5, 3, 2); lampuPintu.position.set(RX - 0.5, 3.2, pz); dKanan.add(lampuPintu);
+  kotak(0.9, 0.02, 1.3, 0x3a2a4a, RX - 0.6, 0.02, pz, scene, false); // keset
+
+  const papanTulis = teksturKanvas(512, 320, (g, w, h) => {
+    g.fillStyle = '#e8eef8'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#3a4f8a'; g.lineWidth = 6; g.lineCap = 'round';
+    g.font = `800 40px ${FONT}`; g.fillStyle = '#3a4f8a'; g.fillText('RENCANA', 28, 60);
+    g.fillStyle = '#d9532b'; g.font = `700 30px ${FONT}`;
+    ['✓ tahap 1', '✓ tahap 2', '→ LogikaKu', '○ tahap 3'].forEach((t, i) => g.fillText(t, 36, 120 + i * 50));
+    g.strokeStyle = '#4f8a6b'; g.beginPath(); g.moveTo(300, 260); g.lineTo(350, 190); g.lineTo(400, 220); g.lineTo(470, 110); g.stroke();
+  });
+  const papanM = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.6), new THREE.MeshBasicMaterial({ map: papanTulis, color: 0xb8c4e0 }));
+  papanM.rotation.y = -Math.PI / 2; papanM.position.set(RX - 0.08, 2.6, -3.6); dKanan.add(papanM);
+  kotak(0.08, 1.7, 2.7, WARNA.gelap2, RX - 0.02, 2.6, -3.6, dKanan);
+  kotak(0.15, 0.05, 2.0, WARNA.gelap2, RX - 0.1, 1.77, -3.6, dKanan);
+
+  const jamCv = document.createElement('canvas'); jamCv.width = jamCv.height = 256;
+  const jamTex = new THREE.CanvasTexture(jamCv); jamTex.colorSpace = THREE.SRGBColorSpace;
+  let menitJam = -1;
+  const gambarJam = () => {
+    const d = new Date(Date.now() + 7 * 3600e3), h = d.getUTCHours(), m = d.getUTCMinutes();
+    if (m === menitJam) return; menitJam = m;
+    const g = jamCv.getContext('2d'); g.clearRect(0, 0, 256, 256);
+    g.fillStyle = '#e8dcc0'; g.beginPath(); g.arc(128, 128, 120, 0, 7); g.fill();
+    g.strokeStyle = '#0a1128'; g.lineWidth = 10; g.stroke();
+    for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; g.lineWidth = 6; g.beginPath(); g.moveTo(128 + Math.sin(a) * 92, 128 - Math.cos(a) * 92); g.lineTo(128 + Math.sin(a) * 106, 128 - Math.cos(a) * 106); g.stroke(); }
+    const jarum = (a, p, l, c) => { g.strokeStyle = c; g.lineWidth = l; g.lineCap = 'round'; g.beginPath(); g.moveTo(128, 128); g.lineTo(128 + Math.sin(a) * p, 128 - Math.cos(a) * p); g.stroke(); };
+    jarum(((h % 12) + m / 60) * Math.PI / 6, 58, 10, '#0a1128');
+    jarum(m * Math.PI / 30, 88, 6, '#d9532b');
+    jamTex.needsUpdate = true;
+  };
+  gambarJam();
+  const jamM = new THREE.Mesh(new THREE.CircleGeometry(0.45, 40), new THREE.MeshBasicMaterial({ map: jamTex }));
+  jamM.rotation.y = -Math.PI / 2; jamM.position.set(RX - 0.06, 3.9, -0.6); dKanan.add(jamM);
+
+  // ---- karpet di bawah meja departemen
+  kotak(11.2, 0.02, 6.6, 0x2a2350, 0, 0.025, 1.5, scene, false).receiveShadow = true;
+  kotak(10.6, 0.022, 6.0, 0x342c62, 0, 0.03, 1.5, scene, false).receiveShadow = true;
+
+  // ---- pojok santai: sofa dan meja kopi
+  const sx = -4.9, sz = RZ - 0.75;
+  const mSofa = mat(0x5b3f7a, { r: 0.95 });
+  kotak(2.6, 0.45, 0.9, mSofa, sx, 0.32, sz);
+  kotak(2.6, 0.75, 0.25, mSofa, sx, 0.75, sz + 0.35);
+  for (const s of [-1, 1]) kotak(0.25, 0.6, 0.9, mSofa, sx + s * 1.3, 0.5, sz);
+  kotak(0.5, 0.35, 0.12, 0xffb347, sx - 0.6, 0.72, sz + 0.15).rotation.x = -0.3; // bantal
+  kotak(1.4, 0.06, 0.7, WARNA.meja, sx, 0.42, sz - 1.15);
+  for (const [dx, dz] of [[-0.6, -0.28], [0.6, -0.28], [-0.6, 0.28], [0.6, 0.28]]) kotak(0.06, 0.4, 0.06, WARNA.gelap, sx + dx, 0.2, sz - 1.15 + dz);
+  tabung(0.08, 0.07, 0.14, WARNA.krem, sx + 0.3, 0.52, sz - 1.1); // cangkir
+  kotak(0.4, 0.04, 0.3, 0x5ad1ff, sx - 0.3, 0.47, sz - 1.2); // buku
+
+  // ---- dispenser air dekat pintu
+  const dx0 = RX - 0.55, dz0 = RZ - 0.8;
+  kotak(0.5, 1.0, 0.5, WARNA.krem, dx0, 0.5, dz0);
+  tabung(0.2, 0.2, 0.5, mat(0x7fd6ff, { t: true, op: 0.6, r: 0.2 }), dx0, 1.25, dz0);
+  kotak(0.08, 0.06, 0.08, 0xff5d6c, dx0 - 0.26, 0.75, dz0 - 0.1); kotak(0.08, 0.06, 0.08, 0x5ad1ff, dx0 - 0.26, 0.75, dz0 + 0.1);
+
+  // ---- lampu lantai di pojok kiri belakang
+  tabung(0.2, 0.25, 0.05, WARNA.gelap, -RX + 0.7, 0.03, -RZ + 0.7);
+  tabung(0.03, 0.03, 2.4, WARNA.krem, -RX + 0.7, 1.2, -RZ + 0.7);
+  tabung(0.15, 0.35, 0.4, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.6 }), -RX + 0.7, 2.5, -RZ + 0.7);
+  const lampuLantai = new THREE.PointLight(0xffa640, 3, 5, 1.6); lampuLantai.position.set(-RX + 0.8, 2.2, -RZ + 0.8); scene.add(lampuLantai);
+
   // tanaman
   tabung(0.3, 0.25, 0.6, WARNA.gelap, RX - 0.8, 0.3, -RZ + 0.8);
   for (let i = 0; i < 6; i++) {
     const d = bola(0.3, 0x2d5a50, RX - 0.8 + Math.cos(i) * 0.2, 0.9 + i * 0.08, -RZ + 0.8 + Math.sin(i) * 0.2);
     d.scale.set(0.5, 1.5, 0.5); d.rotation.z = Math.cos(i * 2) * 0.6;
+  }
+  // tanaman besar di pojok kiri depan
+  tabung(0.35, 0.28, 0.7, 0xd9532b, -RX + 0.7, 0.35, RZ - 0.7);
+  for (let i = 0; i < 9; i++) {
+    const d = bola(0.32, i % 2 ? 0x2d5a50 : 0x3f7a62, -RX + 0.7 + Math.cos(i * 1.3) * 0.25, 1.0 + i * 0.1, RZ - 0.7 + Math.sin(i * 1.3) * 0.25);
+    d.scale.set(0.45, 1.6, 0.45); d.rotation.z = Math.cos(i * 2.1) * 0.7; d.rotation.x = Math.sin(i * 1.7) * 0.5;
   }
 
   // hujan di luar lempeng
@@ -190,8 +312,12 @@ function bangunRuangan(lebar, dalam) {
   scene.add(hujan);
 
   return (dt) => {
-    dBelakang.visible = kamera.position.z > kontrol.target.z;
-    dKiri.visible = kamera.position.x > kontrol.target.x;
+    const cz = kamera.position.z > kontrol.target.z, cx = kamera.position.x > kontrol.target.x;
+    dBelakang.visible = cz; pendek.belakang.visible = !cz;
+    dDepan.visible = !cz; pendek.depan.visible = cz;
+    dKiri.visible = cx; pendek.kiri.visible = !cx;
+    dKanan.visible = !cx; pendek.kanan.visible = cx;
+    gambarJam();
     const p = gHujan.attributes.position.array;
     for (let i = 1; i < p.length; i += 6) {
       p[i] -= dt * 9; p[i + 3] -= dt * 9;
@@ -405,6 +531,24 @@ async function mulai() {
   kanvas.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') kanvas.style.cursor = kena(e) ? 'pointer' : 'grab'; });
   addEventListener('resize', ukurUlang);
 
+  // ---- tombol putar 45 derajat (berguna di trackpad dan HP)
+  let sisaPutar = 0;
+  const putarKamera = (arah) => { sisaPutar += arah * Math.PI / 4; };
+  $('putar-kiri').addEventListener('click', () => putarKamera(-1));
+  $('putar-kanan').addEventListener('click', () => putarKamera(1));
+  addEventListener('keydown', (e) => {
+    if (e.target.closest?.('input, select')) return;
+    if (e.key === 'ArrowLeft') putarKamera(-1);
+    if (e.key === 'ArrowRight') putarKamera(1);
+  });
+  const sumbuY = new THREE.Vector3(0, 1, 0);
+  const langkahPutar = (dt) => {
+    if (Math.abs(sisaPutar) < 1e-4) { sisaPutar = 0; return; }
+    const sudut = Math.sign(sisaPutar) * Math.min(Math.abs(sisaPutar), dt * 3.2);
+    sisaPutar -= sudut;
+    kamera.position.sub(kontrol.target).applyAxisAngle(sumbuY, sudut).add(kontrol.target);
+  };
+
   // ---- muat ulang data setiap 60 detik
   setInterval(async () => { try { pasangData(await muat()); } catch { /* coba lagi nanti */ } }, 60000);
 
@@ -418,6 +562,7 @@ async function mulai() {
       if (keadaan.jam >= SEHARI) { keadaan.putar = false; $('putar').textContent = '▶'; }
       if (Math.floor(lama / 60) !== Math.floor(keadaan.jam / 60) || !keadaan.putar) segarkan();
     }
+    langkahPutar(dt);
     animasiRuangan(dt);
     for (const m of Object.values(keadaan.meja)) m.animasi(t);
     kontrol.update();
