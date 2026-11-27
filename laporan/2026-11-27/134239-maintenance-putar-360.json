@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T13:42:39+07:00",
+  "agen": "maintenance",
+  "tugas": "Buat kantor 3D bisa diputar 360 derajat",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Batas putaran horizontal kamera dilepas, dinding belakang dan kiri otomatis disembunyikan saat kamera berada di baliknya. 23 tes pytest dan 10 tes node lulus, putaran dicek di browser dari 4 sudut. Menunggu merge PR.",
+  "hasil": ["PR #7 di repo kantor-ai: https://github.com/diasss-msy/kantor-ai/pull/7", "Library: coding/kantor-3d/kantor-3d-putar-360.png"]
+}
