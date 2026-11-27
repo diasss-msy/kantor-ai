@@ -3,6 +3,10 @@
 // Semua waktu laporan memakai offset +07:00 (dijamin tools/cek_laporan.py),
 // jadi tanggal dan jam WIB bisa dibaca langsung dari teksnya.
 
+/** Ukuran lantai kantor (satuan dunia). */
+export const LEBAR = 50;
+export const DALAM = 50;
+
 export const STATUS = ['dikerjakan', 'butuh-input', 'gagal', 'selesai'];
 export const SEHARI = 86399; // detik terakhir dalam sehari (23:59:59)
 
@@ -79,32 +83,30 @@ export function tataMeja(karyawan) {
   const petugas = karyawan.filter((k) => k.id === PETUGAS);
   const perBaris = lain.length === 4 ? 4 : 3; // empat departemen muat sebaris
   const jarak = perBaris === 4 ? 4.2 : 5;
-  const baris = Math.max(1, Math.ceil(lain.length / perBaris));
-  const dalam = 11.2 + baris * 4.4;
+  const dalam = DALAM;
   const meja = [];
-  let z0 = -dalam / 2 + 3.6;
-  // manajer punya ruangan sendiri berdinding kaca di sisi belakang lantai yang sama
-  for (const k of manajer) meja.push({ id: k.id, x: manajer.length ? MANAJER_X : 0, z: z0 });
-  z0 = -dalam / 2 + (manajer.length ? 9.4 : 3.8);
+  // manajer punya ruangan sendiri berdinding kaca: seperempat lantai di belakang kiri
+  for (const k of manajer) meja.push({ id: k.id, x: MANAJER_X, z: -dalam / 4 });
+  // departemen di separuh depan, tepat di depan ruang manajer
+  const z0 = manajer.length ? 4 : -dalam / 2 + 3.8;
   lain.forEach((k, i) => {
     const r = Math.floor(i / perBaris), sisa = Math.min(perBaris, lain.length - r * perBaris), c = i % perBaris;
     meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * jarak, z: z0 + r * 4.4 });
   });
   // petugas kebersihan tidak punya meja: ia mangkal di troli kebersihan di sisi kiri depan
-  for (const k of petugas) meja.push({ id: k.id, x: POS_PETUGAS.x, z: -dalam / 2 + POS_PETUGAS.dariBelakang });
+  for (const k of petugas) meja.push({ id: k.id, x: POS_PETUGAS.x, z: dalam / 2 - POS_PETUGAS.dariDepan });
   const lebar = LEBAR;
   const ruangManajer = manajer.length ? {
-    x0: -lebar / 2, x1: 6, z0: -dalam / 2, z1: -dalam / 2 + 7,
-    pintu: { x: 4.7, z: -dalam / 2 + 7 },
+    x0: -lebar / 2, x1: 0, z0: -dalam / 2, z1: 0,
+    pintu: { x: -1.5, z: 0 },
   } : null;
   return { meja, lebar, dalam, ruangManajer };
 }
 
 /** Posisi x meja manajer di dalam ruangannya (membelakangi jendela belakang). */
-export const MANAJER_X = -2;
+export const MANAJER_X = -LEBAR / 4;
 
 /** Lorong samping kiri dan kanan (koordinat x) yang bebas meja, untuk berjalan. */
-export const LEBAR = 20;
 export const LORONG_X = LEBAR / 2 - 1.3;
 
 /**
@@ -140,7 +142,7 @@ export function menganggur(status) {
 /** id petugas kebersihan (cleaning service) di karyawan.json. */
 export const PETUGAS = 'kebersihan';
 /** Tempat mangkal petugas kebersihan: di depan troli, dekat dinding kiri. */
-export const POS_PETUGAS = { x: -LORONG_X + 0.1, dariBelakang: 16 };
+export const POS_PETUGAS = { x: -LORONG_X + 0.1, dariDepan: 4 };
 
 /**
  * Rute petugas kebersihan dari titik a ke titik b lewat lorong samping kiri.

@@ -75,7 +75,6 @@ test('tata meja: manajer di belakang, lainnya tiga per baris', () => {
   assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [-5, 0, 5]);
   const t2 = tataMeja([k('manajer'), ...'abcde'.split('').map(k)]);
   assert.equal(t2.meja.length, 6);
-  assert.ok(t2.dalam > t.dalam);
   assert.deepEqual(t2.meja.slice(4).map((d) => d.x), [-2.5, 2.5]);
   const t3 = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja'), k('maintenance')]);
   const lain = t3.meja.slice(1);
