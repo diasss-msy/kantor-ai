@@ -26,5 +26,12 @@
     "departemen": "Kerja",
     "tugas": "Proyek klien, pekerjaan, dan proyek pribadi: desain lewat Figma atau mockup HTML, dan mengatur proyek",
     "jam_kerja": "08:00–16:00"
+  },
+  {
+    "id": "maintenance",
+    "nama": "Maintenance",
+    "departemen": "Maintenance",
+    "tugas": "Merawat dan meng-upgrade kantor 3D: memperbaiki bug, menambah fitur, menjaga deploy GitHub Pages tetap jalan",
+    "jam_kerja": "08:00–16:00"
   }
 ]
