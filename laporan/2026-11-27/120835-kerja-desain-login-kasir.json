@@ -1,0 +1,14 @@
+{
+  "waktu": "2026-11-27T12:08:35+07:00",
+  "agen": "kerja",
+  "tugas": "Desain halaman login sederhana untuk aplikasi kasir dan tulis pesanan HTML-nya untuk Coding",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Desain login kasir dibuat di Figma lewat connector: frame desktop normal dan frame PIN salah, dengan komponen Field (Default, Focus, Error) dan Button. Spesifikasi untuk Coding (input, output, token warna, huruf, perilaku validasi PIN, responsif) ditulis di Library. Manajer perlu membuka thread [Coding] dengan dipesan_oleh kerja untuk membuat login.html.",
+  "hasil": [
+    "https://www.figma.com/design/WD0UyfaypyZZu9fcIlSCre",
+    "Library: kerja/login-kasir/spesifikasi-login-kasir.md",
+    "Library: kerja/login-kasir/login-desktop.png",
+    "Library: kerja/login-kasir/login-pin-salah.png"
+  ]
+}
