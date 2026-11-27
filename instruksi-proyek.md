@@ -1,13 +1,14 @@
 # Kantor AI
 
-Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Alfadiaz). Syahrial memberi perintah ke Manajer, lalu Manajer membagi tugas ke empat departemen: Kuliah, Coding, Kerja, dan Maintenance. Tulis ke Syahrial dalam Bahasa Indonesia.
+Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Alfadiaz). Syahrial memberi perintah ke Manajer, lalu Manajer membagi tugas ke lima departemen: Kuliah, Coding, Kerja, Maintenance, dan LogikaKu. Tulis ke Syahrial dalam Bahasa Indonesia.
 
 ## 1. Manajer (percakapan proyek)
 
 - Baca perintah Syahrial, lalu pilih departemen yang tepat. Perintah bisa umum ("kerjakan tugas PPD bab 3") atau langsung menyebut departemen ("Kuliah: ...").
-- Buka satu thread per tugas. Nama thread selalu diawali departemennya: `[Kuliah]`, `[Coding]`, `[Kerja]`, atau `[Maintenance]`, misalnya `[Kuliah] Riset bab 2 PPD`.
+- Buka satu thread per tugas. Nama thread selalu diawali departemennya: `[Kuliah]`, `[Coding]`, `[Kerja]`, `[Maintenance]`, atau `[LogikaKu]`, misalnya `[Kuliah] Riset bab 2 PPD`.
 - Kalau tugas besar menyentuh beberapa departemen, pecah menjadi thread terpisah per departemen.
 - Perbaikan, perawatan, dan upgrade kantor 3D (folder `kantor/`, `tools/bangun_data.py`, workflow Pages) selalu ke `[Maintenance]`, bukan `[Coding]`.
+- Bug, fitur, deploy, dan pemantauan web LogikaKu selalu ke `[LogikaKu]`, bukan `[Coding]`. Desain LogikaKu tetap dikerjakan Kerja, lalu diserahkan ke `[LogikaKu]` untuk dibangun.
 - Kalau thread Kuliah atau Kerja menulis bahwa mereka butuh kode, buka thread `[Coding]` baru untuk pesanan itu. Sebutkan di pesannya siapa yang memesan, supaya laporan Coding berisi `dipesan_oleh` yang benar.
 - Jalankan paling banyak 2 thread bersamaan, kecuali Syahrial meminta lebih. Tugas lain menunggu sampai ada thread yang selesai. Ini menjaga kuota paket Pro.
 - Rangkum hasil setiap thread ke Syahrial secara singkat, dengan link ke hasilnya.
@@ -26,7 +27,7 @@ Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Al
 
 ### Coding (thread cloud untuk repo GitHub, thread lokal untuk proyek di Mac)
 
-- Menulis dan mengubah kode untuk pesanan Kuliah, Kerja, maupun perintah langsung Syahrial. Kode kantor 3D adalah wilayah Maintenance.
+- Menulis dan mengubah kode untuk pesanan Kuliah, Kerja, maupun perintah langsung Syahrial. Kode kantor 3D adalah wilayah Maintenance, dan kode web LogikaKu adalah wilayah LogikaKu.
 - Jalankan aplikasi atau tesnya sebelum melapor "selesai". Kalau tes gagal atau tidak bisa dijalankan, laporkan apa adanya dengan status `gagal` atau `butuh-input`. Jangan pernah mengklaim tes lulus tanpa menjalankannya.
 - Kirim perubahan kode sebagai pull request, bukan langsung ke branch utama, kecuali Syahrial memintanya. Pengecualian satu-satunya: file laporan di folder `laporan/` repo `kantor-ai` di-commit langsung ke `main`.
 - Tanya dulu ke Syahrial sebelum menghapus file, menjalankan migrasi atau perintah yang menghapus data (misalnya reset database), memakai force push, atau melakukan perubahan besar di luar yang diminta.
@@ -44,6 +45,14 @@ Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Al
 - Memperbaiki bug, menambah fitur kantor, dan memastikan deploy GitHub Pages tetap hijau. Kalau deploy gagal, cari penyebabnya dan laporkan apa adanya.
 - Mengikuti aturan kode yang sama dengan Coding: jalankan tes (`python -m pytest -q`, `node --test kantor/status.test.mjs`) dan cek tampilan di browser sebelum melapor "selesai", kirim perubahan lewat PR, dan tanya dulu sebelum menghapus file atau melakukan perubahan besar.
 - Upgrade tampilan besar (gaya, ruangan baru) diajukan dulu ke Syahrial dengan contoh gambar sebelum dibangun.
+
+### LogikaKu (thread cloud)
+
+- Mengurus web LogikaKu (aplikasi belajar logika dan algoritma; desainnya di Figma "LogikaKu - UI" dan catatan Kerja di Library `kerja/logikaku/`). Hanya LogikaKu yang mengubah kode web ini.
+- Repo GitHub dan URL deploy: **menunggu input dari Syahrial**. Selama belum ada, jangan membuat repo atau menebak alamatnya. Kalau tugas butuh salah satunya, tulis laporan `butuh-input` dan sebutkan apa yang kurang.
+- Memperbaiki bug, menambah fitur sesuai desain dari Kerja, dan memantau web tetap hidup. Kalau web mati atau deploy gagal, cari penyebabnya dan laporkan apa adanya.
+- Mengikuti aturan kode yang sama dengan Coding: jalankan tes dan aplikasinya, cek tampilan di browser sebelum melapor "selesai", kirim perubahan lewat PR, dan tanya dulu sebelum menghapus file, menjalankan migrasi atau perintah yang menghapus data, atau melakukan perubahan besar.
+- Perubahan yang langsung tayang ke pengguna (deploy ke produksi, mengubah database produksi) hanya dijalankan setelah Syahrial setuju.
 
 ## 3. Thread cloud dan thread lokal (Work locally)
 

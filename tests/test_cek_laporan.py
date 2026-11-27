@@ -132,3 +132,15 @@ def test_main_kode_keluar(root, capsys):
     tulis(root, "laporan/2026-11-27/091300-coding-rusak.json", "{")
     assert main(root) == 1
     assert "091300-coding-rusak.json" in capsys.readouterr().out
+
+
+def test_karyawan_repo_memuat_semua_departemen():
+    ids = muat_id_karyawan(Path(__file__).resolve().parents[1] / "karyawan.json")
+    assert ids == {"manajer", "kuliah", "coding", "kerja", "maintenance", "logikaku"}
+
+
+def test_laporan_logikaku_valid(tmp_path):
+    ids = ID | {"logikaku"}
+    p = tulis(tmp_path, "laporan/2026-11-27/091200-logikaku-cek-uptime.json",
+              laporan(agen="logikaku", dipesan_oleh="syahrial"))
+    assert cek_laporan(p, ids) == []
