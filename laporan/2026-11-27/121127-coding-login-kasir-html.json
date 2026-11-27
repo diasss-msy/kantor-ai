@@ -1,0 +1,12 @@
+{
+  "waktu": "2026-11-27T12:11:27+07:00",
+  "agen": "coding",
+  "tugas": "Buat login.html statis untuk aplikasi kasir sesuai desain Figma dan spesifikasi dari Kerja",
+  "dipesan_oleh": "kerja",
+  "status": "selesai",
+  "ringkasan": "login.html dibuat di demo/login-kasir/ dan dikirim sebagai PR #1 (belum di-merge). Diuji di Chromium lewat Playwright pada 1440x900 dan 390x844: validasi PIN 6 digit, PIN salah sisa 2 lalu 1, salah ketiga terkunci dan tombol nonaktif, PIN 123456 sukses, tombol LIHAT, urutan Tab, tanpa scroll horizontal di HP.",
+  "hasil": [
+    "PR #1 di repo kantor-ai: https://github.com/diasss-msy/kantor-ai/pull/1",
+    "Library: coding/login-kasir/login.html dan 4 tangkapan layar uji"
+  ]
+}
