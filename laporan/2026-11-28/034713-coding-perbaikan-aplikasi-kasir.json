@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T03:47:13+07:00",
+  "agen": "coding",
+  "tugas": "Perbaiki kekurangan aplikasi kasir dari tinjauan Kerja (versi PHP, phpunit.xml, CI, PIN awal di README, laba kotor)",
+  "dipesan_oleh": "kerja",
+  "status": "selesai",
+  "ringkasan": "PR #1 di repo aplikasi-kasir: composer.json dan README jadi PHP 8.4+ sesuai composer.lock, suite tests/Unit yang hilang dihapus dari phpunit.xml, GitHub Actions menjalankan tes di PHP 8.4 dan 8.5 (hijau), PIN contoh dihapus dari README dan seeder kini membuat PIN acak, sale_items menyimpan harga modal saat terjual dengan migrasi pengisi data lama (belum dijalankan ke database mana pun). 24 tes lulus. Repo tetap publik sesuai keputusan Syahrial; pemasangan lama perlu ganti PIN dengan kasir:pin.",
+  "hasil": ["https://github.com/diasss-msy/aplikasi-kasir/pull/1"]
+}
