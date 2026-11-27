@@ -33,5 +33,12 @@
     "departemen": "Maintenance",
     "tugas": "Merawat dan meng-upgrade kantor 3D: memperbaiki bug, menambah fitur, menjaga deploy GitHub Pages tetap jalan",
     "jam_kerja": "08:00–16:00"
+  },
+  {
+    "id": "logikaku",
+    "nama": "LogikaKu",
+    "departemen": "LogikaKu",
+    "tugas": "Mengurus web LogikaKu: memperbaiki bug, menambah fitur, dan memantau web tetap hidup",
+    "jam_kerja": "08:00–16:00"
   }
 ]

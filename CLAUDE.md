@@ -1,6 +1,6 @@
 # Repo kantor-ai: aturan menulis laporan
 
-Setiap thread Kantor AI (Kuliah, Coding, Kerja, Maintenance, dan Manajer) wajib menulis **satu file laporan per tugas** di repo ini sebelum selesai, termasuk kalau tugasnya gagal atau butuh input.
+Setiap thread Kantor AI (Kuliah, Coding, Kerja, Maintenance, LogikaKu, dan Manajer) wajib menulis **satu file laporan per tugas** di repo ini sebelum selesai, termasuk kalau tugasnya gagal atau butuh input.
 
 ## Lokasi dan nama file
 
@@ -18,7 +18,7 @@ laporan/YYYY-MM-DD/HHMMSS-<agen>-<slug>.json
 | Field | Isi |
 |---|---|
 | `waktu` | ISO 8601 dengan offset `+07:00`, misalnya `2026-11-27T09:12:00+07:00`. Jangan memakai `Z` atau UTC. |
-| `agen` | id di `karyawan.json`: `manajer`, `kuliah`, `coding`, `kerja`, atau `maintenance` (huruf kecil). |
+| `agen` | id di `karyawan.json`: `manajer`, `kuliah`, `coding`, `kerja`, `maintenance`, atau `logikaku` (huruf kecil). |
 | `tugas` | Tugas yang diterima, satu kalimat. |
 | `dipesan_oleh` | id karyawan yang memesan, atau `syahrial` kalau perintahnya langsung dari Syahrial. |
 | `status` | `dikerjakan`, `selesai`, `gagal`, atau `butuh-input`. |

@@ -1,6 +1,6 @@
 # kantor-ai
 
-Arsip laporan dan aturan Kantor AI: Manajer membagi tugas ke departemen Kuliah, Coding, dan Kerja, dan setiap tugas meninggalkan satu file laporan di sini.
+Arsip laporan dan aturan Kantor AI: Manajer membagi tugas ke departemen Kuliah, Coding, Kerja, Maintenance, dan LogikaKu, dan setiap tugas meninggalkan satu file laporan di sini.
 
 | File | Isi |
 |---|---|
