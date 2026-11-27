@@ -51,7 +51,7 @@ select:focus-visible, button:focus-visible, input:focus-visible { outline: 2px s
 
 .petunjuk {
   position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%);
-  color: var(--redup); font-size: 13px; white-space: nowrap; pointer-events: none; transition: opacity .4s;
+  color: var(--redup); font-size: 13px; white-space: nowrap; text-shadow: 0 1px 6px #050914, 0 0 2px #050914; pointer-events: none; transition: opacity .4s;
 }
 .timelapse {
   position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%);

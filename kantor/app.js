@@ -52,7 +52,8 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 
 const scene = new THREE.Scene();
-const kamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 300);
+scene.fog = new THREE.Fog(0x0e1736, 112, 185); // gedung jauh dan bagian bawah kota memudar
+const kamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 600);
 const kontrol = new OrbitControls(kamera, kanvas);
 kontrol.enablePan = false;
 kontrol.enableDamping = true;
@@ -106,6 +107,118 @@ function papan(lebar = 2.1) {
 }
 
 // ---------------------------------------------------------------- ruangan
+// ---------------------------------------------------------------- kota
+/** Tekstur fasad: kisi jendela, sebagian menyala hangat atau dingin. */
+function teksturFasad(benih, kolom = 8, baris = 24) {
+  const r = acak(benih);
+  return teksturKanvas(kolom * 32, baris * 40, (g, w, h) => {
+    g.fillStyle = '#0c1430'; g.fillRect(0, 0, w, h);
+    for (let b = 0; b < baris; b++) {
+      g.fillStyle = '#16204a'; g.fillRect(0, b * 40 + 34, w, 6); // pelat lantai
+      for (let k = 0; k < kolom; k++) {
+        const n = r();
+        g.fillStyle = n < 0.12 ? '#e9c27a' : n < 0.17 ? '#7fc0e6' : n < 0.2 ? '#d99a4a' : '#121a3a';
+        g.fillRect(k * 32 + 4, b * 40 + 6, 24, 26);
+      }
+    }
+  });
+}
+const FASAD = [11, 23, 37].map((b) => teksturFasad(b));
+/** Material fasad dengan pengulangan sesuai ukuran (1 jendela ≈ 0.9 x 1.25 satuan). */
+function matFasad(i, w, h) {
+  const t = FASAD[i % FASAD.length].clone(); t.needsUpdate = true;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(w / 4, h / 16);
+  return new THREE.MeshStandardMaterial({ color: 0x8a96c0, map: t, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.4, roughness: 0.6 });
+}
+const lampuAtap = []; // lampu merah di puncak gedung yang berkedip
+let kedip = 0;
+
+/**
+ * Menara kantor (lantai di bawah dan dua lantai di atas kantor) dan gedung-gedung
+ * tinggi di sekelilingnya. Tinggi gedung dibatasi menurut jaraknya, supaya dari
+ * sudut kamera mana pun tidak menutupi ruangan kantor.
+ */
+function bangunKota(lebar, dalam, dinding, r) {
+  const RX = lebar / 2, RZ = dalam / 2, LW = lebar + 0.6, DW = dalam + 0.6;
+  const mAtap = mat(0x141b36, { r: 0.9 });
+  // ---- menara sendiri: lantai-lantai di bawah kantor
+  const TB = 90;
+  const bawah = new THREE.Mesh(new THREE.BoxGeometry(LW, TB, DW), [
+    matFasad(0, DW, TB), matFasad(0, DW, TB), mAtap, mAtap, matFasad(1, LW, TB), matFasad(1, LW, TB),
+  ]);
+  bawah.position.set(0, -1.65 - TB / 2, 0); scene.add(bawah);
+  // ---- dua lantai di atas kantor: hanya fasad yang berada di belakang ruangan (potongan diorama)
+  const TA = 7, ya = 5 + TA / 2;
+  const mDalam = mat(WARNA.dinding, { r: 0.9 });
+  const fasad = (w, d, x, z, induk, i, sisiDalam) => {
+    const luar = matFasad(i, Math.max(w, d), TA);
+    const mats = [luar, luar, mAtap, mAtap, luar, luar]; mats[sisiDalam] = mDalam; // sisi dalam polos
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, TA, d), mats);
+    m.position.set(x, ya, z); induk.add(m);
+  };
+  fasad(LW, 0.3, 0, -RZ - 0.15, dinding.dBelakang, 1, 4);
+  fasad(LW, 0.3, 0, RZ + 0.15, dinding.dDepan, 1, 5);
+  fasad(0.3, dalam, -RX - 0.15, 0, dinding.dKiri, 0, 0);
+  fasad(0.3, dalam, RX + 0.15, 0, dinding.dKanan, 0, 1);
+  // pelat lantai antara kantor dan lantai atas, sebagai list tipis di tiap dinding
+  for (const [g, w, d, x, z] of [
+    [dinding.dBelakang, LW, 0.5, 0, -RZ - 0.1], [dinding.dDepan, LW, 0.5, 0, RZ + 0.1],
+    [dinding.dKiri, 0.5, dalam, -RX - 0.1, 0], [dinding.dKanan, 0.5, dalam, RX + 0.1, 0],
+  ]) kotak(w, 0.18, d, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.5 }), x, 5.05, z, g, false);
+  // antena di puncak menara (di pojok belakang kiri, jauh dari pandangan ke ruangan)
+  const antena = new THREE.Group(); antena.position.set(-RX + 0.6, 5 + TA, -RZ + 0.6); dinding.dBelakang.add(antena);
+  tabung(0.08, 0.12, 6, 0x8a96c0, 0, 3, 0, antena);
+  const mMerah = mat(0xff5d6c, { e: 0xff5d6c, ei: 2 });
+  bola(0.18, mMerah, 0, 6.1, 0, antena); lampuAtap.push(mMerah);
+
+  // ---- gedung-gedung di sekitar, ditata di cincin
+  const gedung = [];
+  for (let i = 0; i < 22; i++) {
+    const sudut = (i / 22) * Math.PI * 2 + (r() - 0.5) * 0.25;
+    const jauh = 27 + r() * 26; // jarak pusat gedung dari pusat kantor
+    const w = 5 + r() * 5, d = 5 + r() * 5;
+    const tepi = jauh - Math.max(w, d) * 0.7; // jarak sisi terdekat
+    // batas aman: puncak di bawah garis pandang kamera terendah ke lantai kantor
+    const maks = 0.45 * tepi - 9;
+    const puncak = Math.min(maks, -16 + r() * 26);
+    if (puncak < -14) continue;
+    gedung.push({ x: Math.cos(sudut) * jauh, z: Math.sin(sudut) * jauh, w, d, puncak, i });
+  }
+  // beberapa menara jauh yang sangat tinggi sebagai latar
+  for (let i = 0; i < 6; i++) {
+    const sudut = (i / 6) * Math.PI * 2 + 0.4, jauh = 62 + r() * 10;
+    gedung.push({ x: Math.cos(sudut) * jauh, z: Math.sin(sudut) * jauh, w: 8 + r() * 4, d: 8 + r() * 4, puncak: 18 + r() * 8, i: i + 30 });
+  }
+  const DASAR = -110;
+  for (const g of gedung) {
+    const h = g.puncak - DASAR;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(g.w, h, g.d), [
+      matFasad(g.i, g.d, h), matFasad(g.i, g.d, h), mAtap, mAtap, matFasad(g.i + 1, g.w, h), matFasad(g.i + 1, g.w, h),
+    ]);
+    m.position.set(g.x, DASAR + h / 2, g.z); scene.add(m);
+    // atap: pagar, kotak AC, kadang antena dengan lampu merah
+    kotak(g.w + 0.2, 0.4, g.d + 0.2, 0x1b2a4e, g.x, g.puncak + 0.2, g.z);
+    kotak(g.w - 0.4, 0.45, g.d - 0.4, mAtap, g.x, g.puncak + 0.25, g.z);
+    kotak(1.2, 0.8, 1.0, 0x2a3a66, g.x + g.w * 0.2, g.puncak + 0.8, g.z - g.d * 0.15);
+    if (g.i % 3 === 0) {
+      tabung(0.06, 0.1, 3, 0x8a96c0, g.x - g.w * 0.25, g.puncak + 1.9, g.z + g.d * 0.2);
+      const mm = mat(0xff5d6c, { e: 0xff5d6c, ei: 2 });
+      bola(0.15, mm, g.x - g.w * 0.25, g.puncak + 3.45, g.z + g.d * 0.2); lampuAtap.push(mm);
+    }
+    if (g.i % 4 === 1) { // papan reklame neon kecil di atap
+      const warna = ['#5ad1ff', '#ff8f6b', '#c9b9e8'][g.i % 3];
+      const tx = teksturKanvas(256, 96, (c, w, hh) => {
+        c.fillStyle = '#0b1128'; c.fillRect(0, 0, w, hh);
+        c.shadowColor = warna; c.shadowBlur = 14; c.fillStyle = warna;
+        c.font = `800 46px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(['LOGIKA', 'KOPI 24', 'HOTEL'][g.i % 3], w / 2, hh / 2);
+      });
+      const pp = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.2), new THREE.MeshBasicMaterial({ map: tx, side: THREE.DoubleSide }));
+      pp.position.set(g.x, g.puncak + 1.6, g.z); pp.lookAt(0, g.puncak + 1.6, 0); scene.add(pp);
+    }
+  }
+}
+
 function bangunRuangan(lebar, dalam) {
   const RX = lebar / 2, RZ = dalam / 2;
   scene.add(new THREE.HemisphereLight(0x6f8fe8, 0x1b2a4e, 1.1));
@@ -116,7 +229,7 @@ function bangunRuangan(lebar, dalam) {
   const isi = new THREE.DirectionalLight(0x8fa8ff, 0.6); isi.position.set(14, 10, 14); scene.add(isi);
   const tepi = new THREE.DirectionalLight(0xb8c8ff, 0.9); tepi.position.set(-4, 8, -14); scene.add(tepi);
 
-  // lempeng melayang
+  // lantai kantor di dalam menara (lempeng + list emas pemisah lantai)
   kotak(lebar, 0.25, dalam, mat(WARNA.lantai, { r: 0.7 }), 0, -0.12, 0);
   kotak(lebar + 0.2, 1.4, dalam + 0.2, mat(WARNA.gelap, { r: 0.9 }), 0, -0.95, 0);
   kotak(lebar + 0.24, 0.06, dalam + 0.24, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.6 }), 0, -0.25, 0, scene, false);
@@ -336,6 +449,8 @@ function bangunRuangan(lebar, dalam) {
     d.scale.set(0.45, 1.6, 0.45); d.rotation.z = Math.cos(i * 2.1) * 0.7; d.rotation.x = Math.sin(i * 1.7) * 0.5;
   }
 
+  bangunKota(lebar, dalam, { dBelakang, dKiri, dDepan, dKanan }, r);
+
   // hujan di luar lempeng
   const titik = [];
   for (let i = 0; i < 260; i++) {
@@ -363,6 +478,8 @@ function bangunRuangan(lebar, dalam) {
     }
     gHujan.attributes.position.needsUpdate = true;
     for (const m of hujanKaca) { m.position.y -= dt * 1.2; if (m.position.y < 1.7) m.position.y += 2.6; }
+    kedip = (kedip + dt) % 1.6;
+    for (const m of lampuAtap) m.emissiveIntensity = kedip < 0.5 ? 2.4 : 0.15;
     // mesin kopi mengepul saat ada yang menyeduh
     kopi.uap = Math.max(0, kopi.uap - dt);
     const aktif = kopi.uap > 0;
@@ -663,7 +780,7 @@ async function mulai() {
   const posisi = Object.fromEntries(tata.meja.map((m) => [m.id, m]));
   data.karyawan.forEach((k, i) => { keadaan.meja[k.id] = bangunMeja(k, posisi[k.id].x, posisi[k.id].z, i); });
 
-  kamera.position.set(22, 19, 22);
+  kamera.position.set(66, 57, 66); // jauh, supaya gedung di sekitar tidak terpotong bidang dekat kamera
   kontrol.target.set(0, 0.6, 0.4);
   kontrol.update();
   ukurUlang();
