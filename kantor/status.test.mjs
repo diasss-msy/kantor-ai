@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   tanggalWIB, detikHari, formatJam, hariIniWIB, daftarTanggal, laporanPada,
-  statusPada, ringkasHari, tautan, tataMeja, rencanaRute, menganggur, LORONG_X,
+  statusPada, ringkasHari, tautan, tataMeja, rencanaRute, menganggur, LORONG_X, MANAJER_X,
 } from './status.js';
 
 const L = (waktu, agen, status) => ({ waktu, agen, status, tugas: 't', ringkasan: 'r', hasil: [] });
@@ -95,6 +95,31 @@ test('rute jalan: kursi -> lorong belakang meja -> lorong samping -> tujuan', ()
   for (let i = 1; i < r.length; i++) assert.ok(r[i].x === r[i - 1].x || r[i].z === r[i - 1].z, `ruas ${i}`);
   const kiri = rencanaRute({ x: 2.1, z: 2.65 }, { x: -5.6, z: -3.5 });
   assert.equal(kiri[3].x, -LORONG_X);
+});
+
+test('ruang manajer: meja manajer di dalamnya, meja lain di luarnya', () => {
+  const k = (id) => ({ id });
+  const t = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja'), k('maintenance'), k('logikaku')]);
+  const r = t.ruangManajer;
+  const di = (d) => d.x > r.x0 && d.x < r.x1 && d.z > r.z0 && d.z < r.z1;
+  const m = t.meja.find((d) => d.id === 'manajer');
+  assert.equal(m.x, MANAJER_X);
+  assert.ok(di(m), 'meja manajer di dalam ruangan');
+  // kursi dan lorong belakang kursi karyawan lain tetap di luar dinding kaca
+  for (const d of t.meja.filter((d) => d.id !== 'manajer')) assert.ok(d.z - 0.85 - 1.05 > r.z1 + 0.3, d.id);
+  assert.equal(tataMeja([k('kuliah')]).ruangManajer, null);
+});
+
+test('rute manajer keluar lewat pintu ruangannya', () => {
+  const t = tataMeja([{ id: 'manajer' }, { id: 'kuliah' }]);
+  const m = t.meja[0], pintu = t.ruangManajer.pintu;
+  const rute = rencanaRute({ x: m.x, z: m.z - 0.85 }, { x: 5.6, z: -5.2 }, pintu);
+  const i = rute.findIndex((p) => p.x === pintu.x && p.z > pintu.z);
+  assert.ok(i > 0, 'melewati pintu');
+  // sebelum pintu semua titik di dalam ruangan, sesudahnya di luar atau di lorong samping
+  for (const p of rute.slice(0, i)) assert.ok(p.z < pintu.z && p.x <= t.ruangManajer.x1, JSON.stringify(p));
+  for (let j = 1; j < rute.length; j++) assert.ok(rute[j].x === rute[j - 1].x || rute[j].z === rute[j - 1].z, `ruas ${j}`);
+  assert.deepEqual(rute.at(-1), { x: 5.6, z: -5.2 });
 });
 
 test('menganggur hanya untuk kosong dan selesai', () => {

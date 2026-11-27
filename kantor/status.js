@@ -82,14 +82,23 @@ export function tataMeja(karyawan) {
   const dalam = 6 + baris * 4;
   const meja = [];
   let z0 = -dalam / 2 + 2.6;
-  for (const k of manajer) meja.push({ id: k.id, x: 0, z: z0 });
+  // manajer punya ruangan sendiri berdinding kaca di sisi belakang lantai yang sama
+  for (const k of manajer) meja.push({ id: k.id, x: manajer.length ? MANAJER_X : 0, z: z0 });
   z0 += manajer.length ? 3.9 : 1.2;
   lain.forEach((k, i) => {
     const r = Math.floor(i / perBaris), sisa = Math.min(perBaris, lain.length - r * perBaris), c = i % perBaris;
     meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * jarak, z: z0 + r * 4 });
   });
-  return { meja, lebar: 14, dalam };
+  const lebar = 14;
+  const ruangManajer = manajer.length ? {
+    x0: -lebar / 2, x1: 3.5, z0: -dalam / 2, z1: -dalam / 2 + 4.15,
+    pintu: { x: 2.2, z: -dalam / 2 + 4.15 },
+  } : null;
+  return { meja, lebar, dalam, ruangManajer };
 }
+
+/** Posisi x meja manajer di dalam ruangannya (membelakangi jendela belakang). */
+export const MANAJER_X = -1.2;
 
 /** Lorong samping kiri dan kanan (koordinat x) yang bebas meja, untuk berjalan. */
 export const LORONG_X = 5.7;
@@ -99,17 +108,22 @@ export const LORONG_X = 5.7;
  * menyusuri lorong itu ke lorong samping (kiri atau kanan, yang lebih dekat
  * ke tujuan), lalu ke tujuan. Hasil: daftar titik { x, z } diawali kursi.
  */
-export function rencanaRute(kursi, tujuan) {
+export function rencanaRute(kursi, tujuan, pintu = null) {
   const lorongZ = kursi.z - 1.05; // tepat di belakang sandaran kursi
   const cx = tujuan.x >= 0 ? LORONG_X : -LORONG_X;
   const titik = [
     { x: kursi.x, z: kursi.z },
     { x: kursi.x + 0.6, z: kursi.z }, // geser ke samping kursi dulu
     { x: kursi.x + 0.6, z: lorongZ },
-    { x: cx, z: lorongZ },
+  ];
+  // dari ruangan tertutup (ruang manajer): keluar lewat pintunya dulu
+  const luarZ = pintu ? pintu.z + 0.5 : lorongZ;
+  if (pintu) titik.push({ x: pintu.x, z: lorongZ }, { x: pintu.x, z: luarZ });
+  titik.push(
+    { x: cx, z: luarZ },
     { x: cx, z: tujuan.z },
     { x: tujuan.x, z: tujuan.z },
-  ];
+  );
   // buang titik ganda berurutan
   return titik.filter((p, i) => i === 0 || Math.hypot(p.x - titik[i - 1].x, p.z - titik[i - 1].z) > 1e-6);
 }

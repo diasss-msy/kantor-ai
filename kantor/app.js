@@ -551,7 +551,7 @@ function bangunRuangan(lebar, dalam) {
   }
 
   // rak buku
-  const rakZ = -RZ + 3.5;
+  const rakZ = -RZ + 2.6; // di dalam ruang manajer
   kotak(0.5, 3.2, 2.6, WARNA.gelap, -RX + 0.25, 1.6, rakZ);
   const warnaBuku = [0x3a4f8a, 0xffb347, 0xc9b9e8, 0x5ad1ff, 0xe8dcc0];
   for (let b = 0; b < 4; b++) {
@@ -689,8 +689,8 @@ function bangunRuangan(lebar, dalam) {
   // tempat yang didatangi pegawai yang sedang jalan-jalan (arah = hadap tubuh, radian)
   tempatJalan = [
     { x: 2.2, z: RZ - 0.8, arah: 0 }, // jendela depan
-    { x: -1.2, z: -RZ + 0.7, arah: Math.PI }, // jendela belakang
-    { x: -RX + 1.3, z: -RZ + 3.5, arah: -Math.PI / 2 }, // rak buku
+    { x: 0.6, z: -RZ + 4.8, arah: Math.PI }, // mengintip ruang manajer lewat kaca
+    { x: -RX + 1.3, z: -0.8, arah: -Math.PI / 2 }, // neon KANTOR AI
     { x: RX - 1.3, z: RZ - 0.8, arah: Math.PI / 2 }, // dispenser
     { x: LORONG_X, z: 1.6, arah: Math.PI / 2 }, // papan tulis dari jauh
   ];
@@ -751,6 +751,96 @@ function bangunRuangan(lebar, dalam) {
       b.material.opacity = aktif ? 0.35 * (1 - f) : 0;
     }
   };
+}
+
+// ---------------------------------------------------------------- ruang manajer
+const posisi0 = (t, id) => t.meja.find((m) => m.id === id);
+
+/**
+ * Ruang manajer di sisi belakang lantai: dinding kaca rendah dengan rangka,
+ * pintu kaca terbuka dengan papan nama, karpet, meja rapat bundar, rak buku,
+ * tanaman, lampu gantung, dan lemari arsip.
+ */
+function bangunRuangManajer(r, meja) {
+  const { x0, x1, z0, z1, pintu } = r;
+  const T = 2.8; // tinggi dinding kaca, lebih rendah dari dinding luar supaya papan nama tetap terlihat
+  const mRangka = mat(0x2a3242, { r: 0.5, m: 0.5 });
+  const mKacaR = new THREE.MeshStandardMaterial({ color: 0xa9c8ff, transparent: true, opacity: 0.16, roughness: 0.05, metalness: 0.1, depthWrite: false, side: THREE.DoubleSide });
+  const mGaris = new THREE.MeshBasicMaterial({ color: 0xdfe8ff, transparent: true, opacity: 0.22, depthWrite: false }); // pita kaca buram
+  // lantai kayu yang lebih hangat
+  kotak(x1 - x0 - 0.1, 0.03, z1 - z0 - 0.1, mat(0x3b2a3a, { r: 0.7 }), (x0 + x1) / 2, 0.02, (z0 + z1) / 2, scene, false).receiveShadow = true;
+  for (let z = z0 + 0.4; z < z1; z += 0.55) kotak(x1 - x0 - 0.1, 0.005, 0.03, 0x2b1f2c, (x0 + x1) / 2, 0.04, z, scene, false);
+  /** Satu bentang dinding kaca dari (ax, az) ke (bx, bz), sejajar sumbu. */
+  function kaca(ax, az, bx, bz) {
+    const panjang = Math.hypot(bx - ax, bz - az), cx = (ax + bx) / 2, cz = (az + bz) / 2, sepanjangX = az === bz;
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(panjang, T - 0.15), mKacaR);
+    p.position.set(cx, (T - 0.15) / 2 + 0.08, cz); if (!sepanjangX) p.rotation.y = Math.PI / 2;
+    p.renderOrder = 5; scene.add(p);
+    const w = sepanjangX ? panjang : 0.08, d = sepanjangX ? 0.08 : panjang;
+    kotak(w, 0.08, d, mRangka, cx, T, cz, scene, false); // ambang atas
+    kotak(w, 0.12, d, mRangka, cx, 0.06, cz, scene, false); // ambang bawah
+    kotak(sepanjangX ? panjang : 0.02, 0.3, sepanjangX ? 0.02 : panjang, mGaris, cx, 1.15, cz, scene, false).renderOrder = 6; // pita buram di kaca
+    const n = Math.max(1, Math.round(panjang / 1.8));
+    for (let i = 0; i <= n; i++) {
+      const f = i / n;
+      kotak(0.08, T, 0.08, mRangka, ax + (bx - ax) * f, T / 2, az + (bz - az) * f, scene, false);
+    }
+  }
+  const lebarPintu = 1.0;
+  kaca(x0 + 0.3, z1, pintu.x - lebarPintu / 2, z1); // dinding depan sampai pintu
+  kaca(x1, z0 + 0.3, x1, z1); // dinding samping kanan
+  kotak(x1 - (pintu.x + lebarPintu / 2) + 0.04, T, 0.08, mRangka, (x1 + pintu.x + lebarPintu / 2) / 2, T / 2, z1, scene, false); // tiang pojok
+  kotak(lebarPintu, 0.3, 0.08, mRangka, pintu.x, T - 0.1, z1, scene, false); // kusen atas pintu
+  // daun pintu kaca terbuka ke dalam
+  const engsel = new THREE.Group(); engsel.position.set(pintu.x - lebarPintu / 2, 0, z1); engsel.rotation.y = 1.25; scene.add(engsel);
+  const daun = new THREE.Mesh(new THREE.PlaneGeometry(lebarPintu - 0.05, T - 0.4), mKacaR);
+  daun.position.set((lebarPintu - 0.05) / 2, (T - 0.4) / 2 + 0.05, 0); daun.renderOrder = 5; engsel.add(daun);
+  kotak(0.04, T - 0.4, 0.05, mRangka, lebarPintu - 0.06, (T - 0.4) / 2 + 0.05, 0, engsel, false);
+  kotak(0.04, 0.3, 0.06, WARNA.krem, lebarPintu - 0.18, 1.05, 0.04, engsel, false); // gagang
+  // papan nama MANAJER di atas pintu, menghadap keluar
+  const tx = teksturKanvas(512, 128, (c, w, h) => {
+    c.fillStyle = '#141b36'; c.fillRect(0, 0, w, h);
+    c.strokeStyle = '#ffcf7a'; c.lineWidth = 6; c.strokeRect(6, 6, w - 12, h - 12);
+    c.fillStyle = '#ffcf7a'; c.font = `800 64px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('MANAJER', w / 2, h / 2 + 3);
+  });
+  for (const s of [1, -1]) {
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.38), new THREE.MeshBasicMaterial({ map: tx }));
+    pl.position.set(pintu.x - 0.4, T + 0.28, z1 + s * 0.05); if (s < 0) pl.rotation.y = Math.PI; scene.add(pl);
+  }
+  kotak(1.55, 0.42, 0.06, mRangka, pintu.x - 0.4, T + 0.28, z1, scene, false);
+
+  // karpet di bawah meja manajer
+  kotak(4.2, 0.02, 2.8, 0x5b2f3a, meja.x, 0.05, meja.z - 0.3, scene, false).receiveShadow = true;
+  kotak(3.8, 0.022, 2.4, 0x7a3f4c, meja.x, 0.055, meja.z - 0.3, scene, false).receiveShadow = true;
+  // lampu gantung di atas meja
+  tabung(0.015, 0.015, 1.6, WARNA.krem, meja.x, 4.2, meja.z, scene);
+  tabung(0.12, 0.45, 0.35, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.8 }), meja.x, 3.3, meja.z);
+  const lampuGantung = new THREE.PointLight(0xffb347, 5, 6, 1.5); lampuGantung.position.set(meja.x, 3.0, meja.z); scene.add(lampuGantung);
+
+  // meja rapat bundar dengan empat kursi
+  const mx = x0 + 2.55, mz = (z0 + z1) / 2 + 0.25;
+  tabung(0.75, 0.75, 0.07, mat(WARNA.meja, { r: 0.5 }), mx, 0.78, mz);
+  tabung(0.08, 0.2, 0.75, WARNA.gelap, mx, 0.38, mz);
+  for (let i = 0; i < 4; i++) {
+    const a = i * Math.PI / 2 + Math.PI / 4, kx = mx + Math.sin(a) * 1.05, kz = mz + Math.cos(a) * 1.05;
+    const g = new THREE.Group(); g.position.set(kx, 0, kz); g.rotation.y = a + Math.PI; scene.add(g);
+    kotak(0.5, 0.07, 0.5, 0x5b3f7a, 0, 0.48, 0, g); kotak(0.5, 0.5, 0.07, 0x5b3f7a, 0, 0.75, -0.22, g);
+    tabung(0.04, 0.04, 0.45, WARNA.gelap2, 0, 0.23, 0, g);
+  }
+  kotak(0.5, 0.02, 0.35, WARNA.krem, mx - 0.15, 0.83, mz + 0.1).rotation.y = 0.3; // berkas rapat
+  tabung(0.06, 0.05, 0.11, 0xff8f6b, mx + 0.3, 0.87, mz - 0.2);
+
+  // lemari arsip dan piala di samping pintu (dalam ruangan)
+  const ax = x1 - 0.45, az = z0 + 1.0;
+  kotak(0.7, 1.3, 1.4, WARNA.gelap, ax, 0.65, az);
+  for (const dy of [0.35, 0.75, 1.1]) kotak(0.02, 0.28, 1.2, WARNA.gelap2, ax - 0.36, dy, az);
+  tabung(0.1, 0.14, 0.12, 0xffcf7a, ax, 1.37, az - 0.3); // piala
+  tabung(0.14, 0.06, 0.25, mat(0xffcf7a, { m: 0.8, r: 0.3 }), ax, 1.55, az - 0.3);
+  kotak(0.3, 0.38, 0.05, 0xe8dcc0, ax, 1.5, az + 0.3).rotation.y = -0.4; // bingkai foto
+  // tanaman besar di pojok
+  tabung(0.3, 0.24, 0.55, 0xd9532b, x1 - 0.45, 0.28, z1 - 0.45);
+  bola(0.45, 0x4f8a6b, x1 - 0.45, 0.95, z1 - 0.45); bola(0.3, 0x3f7a5e, x1 - 0.3, 1.3, z1 - 0.55);
 }
 
 // ---------------------------------------------------------------- meja + karakter
@@ -853,7 +943,7 @@ function bangunMeja(k, x, z, indeks) {
   const gerak = { mode: 'duduk', rute: [], i: 0, tunggu: 2 + Math.random() * 8, aksi: null, tujuan: null, waktu: 0, minum: 0 };
   const kursiDunia = dunia(KURSI);
   function mulaiJalan(tujuan, aksi) {
-    gerak.rute = rencanaRute(kursiDunia, tujuan).map((p) => ({ x: p.x - x, z: p.z - z }));
+    gerak.rute = rencanaRute(kursiDunia, tujuan, k.id === 'manajer' ? tata.ruangManajer?.pintu : null).map((p) => ({ x: p.x - x, z: p.z - z }));
     gerak.i = 1; gerak.mode = 'pergi'; gerak.aksi = aksi; gerak.tujuan = tujuan;
     for (const kk of kaki) kk.visible = true;
   }
@@ -1037,6 +1127,7 @@ async function mulai() {
 
   tata = tataMeja(data.karyawan);
   const animasiRuangan = bangunRuangan(tata.lebar, tata.dalam);
+  if (tata.ruangManajer) bangunRuangManajer(tata.ruangManajer, posisi0(tata, 'manajer'));
   const posisi = Object.fromEntries(tata.meja.map((m) => [m.id, m]));
   data.karyawan.forEach((k, i) => { keadaan.meja[k.id] = bangunMeja(k, posisi[k.id].x, posisi[k.id].z, i); });
 
