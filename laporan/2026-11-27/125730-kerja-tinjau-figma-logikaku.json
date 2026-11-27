@@ -4,6 +4,6 @@
   "tugas": "Buka Figma Syahrial dan tinjau proyek berjudul LogikaKu tanpa mengubah apa pun",
   "dipesan_oleh": "syahrial",
   "status": "butuh-input",
-  "ringkasan": "File LogikaKu belum bisa dibuka. Connector Figma tersambung (akun syahrial alfadiaz, team starter) tetapi tidak punya fitur mencari atau mendaftar file, jadi butuh link file. Browser bawaan di Mac belum login ke Figma. Menunggu Syahrial mengirim link file LogikaKu atau login Figma di browser bawaan.",
-  "hasil": []
+  "ringkasan": "Syahrial mengirim link file LogikaKu - UI. Struktur halaman Screens terbaca penuh: 35 layar x 3 ukuran x 2 tema (210 frame), alur dan komponen diringkas, beserta bagian yang tampak belum selesai. Halaman Design System dan Components serta screenshot belum terbaca karena kuota Figma MCP paket Starter habis. Tidak ada yang diubah di Figma. Menunggu Syahrial memilih pekerjaan berikutnya.",
+  "hasil": ["Library: kerja/logikaku/tinjauan-figma-logikaku.md"]
 }
