@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T22:37:25+07:00",
+  "agen": "logikaku",
+  "tugas": "Pindahkan web LogikaKu ke Laravel dengan database Supabase",
+  "dipesan_oleh": "syahrial",
+  "status": "butuh-input",
+  "ringkasan": "Laravel 13 sudah dibangun di PR #7: daftar, masuk, keluar, lupa dan ganti kata sandi, progres per modul di database, RLS untuk Supabase, mode demo tetap untuk GitHub Pages. 20 tes PHPUnit dan tes Playwright mode server dan demo lulus. Menunggu Syahrial memilih cara memakai Supabase sebelum proyek Supabase dibuat dan migrasi dijalankan. Kredensial tidak ikut.",
+  "hasil": ["PR #7 di repo LogikaKu", "coding/logikaku/potret/laravel/beranda-akun-baru.png"]
+}
