@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T13:21:00+07:00",
+  "agen": "kerja",
+  "tugas": "Lengkapi layar dan alur prototype LogikaKu di Figma",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Kuota Figma MCP habis, jadi dikerjakan lewat aplikasi Figma di Mac dengan perintah baru '6 · Lengkapi layar & alur' di plugin LogikaKu Builder (cadangan plugin lama di design/backup-2026-11-27). Ditambah 5 layar baru (ganti kata sandi, ganti kata sandi gagal, sandi tersimpan, konfirmasi keluar, latihan proposisi benar) dalam 3 ukuran dan mode terang/gelap = 30 frame. Profil kini menuju ganti kata sandi dan konfirmasi keluar; kartu modul yang terbuka, menu sidebar modul, tombol latihan, dan tombol kembali kini punya link prototype. Frame lama tidak dibangun ulang. Modul 6-10 tetap terkunci sesuai desain, jadi flowchart, pseudocode, dan latihan 18-20 hanya terjangkau lewat tombolnya sendiri.",
+  "hasil": ["Figma: LogikaKu - UI, halaman Screens, frame 21-ganti-sandi, 21c-ganti-sandi-gagal, 21b-sandi-tersimpan, 14b-keluar, 15b-latihan-proposisi-benar", "Mac: /Users/user/Projects/logikaku/design/figma-plugin (perintah 6 · Lengkapi layar & alur)"]
+}
