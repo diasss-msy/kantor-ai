@@ -104,3 +104,5 @@ select:focus-visible, button:focus-visible, input:focus-visible { outline: 2px s
   .petunjuk { bottom: 78px; }
   .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 62vh; border-radius: 16px 16px 0 0; }
 }
+.timelapse .putar-kamera { font-size: 20px; }
+@media (max-width: 420px) { .petunjuk { white-space: normal; text-align: center; width: calc(100% - 32px); bottom: 92px; } .timelapse { gap: 8px; } .timelapse output { min-width: 64px; font-size: 12px; } }

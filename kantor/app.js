@@ -51,6 +51,7 @@ const kamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 300);
 const kontrol = new OrbitControls(kamera, kanvas);
 kontrol.enablePan = false;
 kontrol.enableDamping = true;
+kontrol.rotateSpeed = 1.6; // satu kali geser cukup untuk berputar jauh
 kontrol.minZoom = 0.7;
 kontrol.maxZoom = 2.6;
 kontrol.minPolarAngle = 0.7;
@@ -405,6 +406,24 @@ async function mulai() {
   kanvas.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') kanvas.style.cursor = kena(e) ? 'pointer' : 'grab'; });
   addEventListener('resize', ukurUlang);
 
+  // ---- tombol putar 45 derajat (berguna di trackpad dan HP)
+  let sisaPutar = 0;
+  const putarKamera = (arah) => { sisaPutar += arah * Math.PI / 4; };
+  $('putar-kiri').addEventListener('click', () => putarKamera(-1));
+  $('putar-kanan').addEventListener('click', () => putarKamera(1));
+  addEventListener('keydown', (e) => {
+    if (e.target.closest?.('input, select')) return;
+    if (e.key === 'ArrowLeft') putarKamera(-1);
+    if (e.key === 'ArrowRight') putarKamera(1);
+  });
+  const sumbuY = new THREE.Vector3(0, 1, 0);
+  const langkahPutar = (dt) => {
+    if (Math.abs(sisaPutar) < 1e-4) { sisaPutar = 0; return; }
+    const sudut = Math.sign(sisaPutar) * Math.min(Math.abs(sisaPutar), dt * 3.2);
+    sisaPutar -= sudut;
+    kamera.position.sub(kontrol.target).applyAxisAngle(sumbuY, sudut).add(kontrol.target);
+  };
+
   // ---- muat ulang data setiap 60 detik
   setInterval(async () => { try { pasangData(await muat()); } catch { /* coba lagi nanti */ } }, 60000);
 
@@ -418,6 +437,7 @@ async function mulai() {
       if (keadaan.jam >= SEHARI) { keadaan.putar = false; $('putar').textContent = '▶'; }
       if (Math.floor(lama / 60) !== Math.floor(keadaan.jam / 60) || !keadaan.putar) segarkan();
     }
+    langkahPutar(dt);
     animasiRuangan(dt);
     for (const m of Object.values(keadaan.meja)) m.animasi(t);
     kontrol.update();

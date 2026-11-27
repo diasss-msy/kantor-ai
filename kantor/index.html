@@ -25,12 +25,14 @@
   <ul class="ringkas" id="ringkas" aria-label="Jumlah laporan hari ini per status"></ul>
 </header>
 
-<div class="petunjuk" id="petunjuk">Geser untuk memutar kantor, klik karakter untuk melihat laporannya</div>
+<div class="petunjuk" id="petunjuk">Geser atau tekan ⟲ ⟳ untuk memutar · klik karakter untuk laporannya</div>
 
 <footer class="timelapse">
   <button id="putar" type="button" aria-label="Putar timelapse">▶</button>
   <input id="jam" type="range" min="0" max="86399" step="60" value="86399" aria-label="Jam">
   <output id="label-jam" for="jam">sepanjang hari</output>
+  <button id="putar-kiri" class="putar-kamera" type="button" aria-label="Putar kantor ke kiri" title="Putar ke kiri">⟲</button>
+  <button id="putar-kanan" class="putar-kamera" type="button" aria-label="Putar kantor ke kanan" title="Putar ke kanan">⟳</button>
 </footer>
 
 <aside class="panel" id="panel" hidden aria-labelledby="panel-nama">
