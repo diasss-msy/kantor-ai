@@ -136,7 +136,7 @@ def test_main_kode_keluar(root, capsys):
 
 def test_karyawan_repo_memuat_semua_departemen():
     ids = muat_id_karyawan(Path(__file__).resolve().parents[1] / "karyawan.json")
-    assert ids == {"manajer", "kuliah", "coding", "kerja", "maintenance", "logikaku"}
+    assert ids == {"manajer", "kuliah", "coding", "kerja", "maintenance", "logikaku", "kebersihan"}
 
 
 def test_laporan_logikaku_valid(tmp_path):

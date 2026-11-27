@@ -15,5 +15,5 @@ def test_memuat_aturan_penting():
     teks = baca()
     for wajib in ["[Kuliah]", "[Coding]", "[Kerja]", "255150600111027", ".docx",
                   ".pdf", "2 thread", "kantor-ai", "Work locally", "publik", "[Maintenance]",
-                  "[LogikaKu]"]:
+                  "[LogikaKu]", "[Kebersihan]"]:
         assert wajib in teks, wajib

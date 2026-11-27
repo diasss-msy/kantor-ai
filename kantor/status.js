@@ -75,7 +75,8 @@ export function tautan(teks) {
  */
 export function tataMeja(karyawan) {
   const manajer = karyawan.filter((k) => k.id === 'manajer');
-  const lain = karyawan.filter((k) => k.id !== 'manajer');
+  const lain = karyawan.filter((k) => k.id !== 'manajer' && k.id !== PETUGAS);
+  const petugas = karyawan.filter((k) => k.id === PETUGAS);
   const perBaris = lain.length === 4 ? 4 : 3; // empat departemen muat sebaris
   const jarak = perBaris === 4 ? 3.4 : 4.2;
   const baris = Math.max(1, Math.ceil(lain.length / perBaris));
@@ -89,6 +90,8 @@ export function tataMeja(karyawan) {
     const r = Math.floor(i / perBaris), sisa = Math.min(perBaris, lain.length - r * perBaris), c = i % perBaris;
     meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * jarak, z: z0 + r * 4 });
   });
+  // petugas kebersihan tidak punya meja: ia mangkal di troli kebersihan di sisi kiri depan
+  for (const k of petugas) meja.push({ id: k.id, x: POS_PETUGAS.x, z: -dalam / 2 + POS_PETUGAS.dariBelakang });
   const lebar = 14;
   const ruangManajer = manajer.length ? {
     x0: -lebar / 2, x1: 3.5, z0: -dalam / 2, z1: -dalam / 2 + 4.15,
@@ -131,4 +134,31 @@ export function rencanaRute(kursi, tujuan, pintu = null) {
 /** Pegawai menganggur (boleh jalan-jalan) kalau tidak sedang bekerja atau menunggu input. */
 export function menganggur(status) {
   return status === 'kosong' || status === 'selesai';
+}
+
+/** id petugas kebersihan (cleaning service) di karyawan.json. */
+export const PETUGAS = 'kebersihan';
+/** Tempat mangkal petugas kebersihan: di depan troli, dekat dinding kiri. */
+export const POS_PETUGAS = { x: -5.6, dariBelakang: 11.4 };
+
+/**
+ * Rute petugas kebersihan dari titik a ke titik b lewat lorong samping kiri.
+ * Kalau b ada di ruang manajer, lewat pintunya. Setiap ruas sejajar sumbu.
+ */
+export function ruteLorong(a, b, pintu = null) {
+  const cx = -LORONG_X;
+  const t = [{ x: a.x, z: a.z }, { x: cx, z: a.z }];
+  if (pintu) {
+    const luar = pintu.z + 0.5;
+    t.push({ x: cx, z: luar }, { x: pintu.x, z: luar }, { x: pintu.x, z: b.z });
+  } else t.push({ x: cx, z: b.z });
+  t.push({ x: b.x, z: b.z });
+  return t.filter((p, i) => i === 0 || Math.hypot(p.x - t[i - 1].x, p.z - t[i - 1].z) > 1e-6);
+}
+
+/** Tempat sampah yang paling penuh (dikosongkan duluan); null kalau semua hampir kosong. */
+export function sampahTerpenuh(tempat, minimal = 0.34) {
+  let pilih = null;
+  for (const t of tempat) if (t.isi >= minimal && (!pilih || t.isi > pilih.isi)) pilih = t;
+  return pilih;
 }

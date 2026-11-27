@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import {
-  SEHARI, daftarTanggal, formatJam, hariIniWIB, laporanPada, LORONG_X, menganggur, rencanaRute, ringkasHari, statusPada, tataMeja,
+  SEHARI, daftarTanggal, formatJam, hariIniWIB, laporanPada, LORONG_X, menganggur, PETUGAS, rencanaRute, ringkasHari, ruteLorong, sampahTerpenuh, statusPada, tataMeja,
 } from './status.js';
 import { bukaPanel, isiInfo, isiRingkas, isiTanggal, tampilGalat, tutupPanel } from './panel.js';
 
@@ -14,7 +14,7 @@ const WARNA = {
   gelap: 0x121a33, gelap2: 0x0e1530, meja: 0x2c3e70, sodium: 0xffb347, layar: 0x5ad1ff,
   merah: 0xff5d6c, krem: 0xe8dcc0, redup: 0x7f93c9, kulit: 0xa8775a,
 };
-const BAJU = { manajer: '#c9b9e8', kuliah: '#e8dcc0', coding: '#3a4f8a', kerja: '#ff8f6b', maintenance: '#7fd1b9', logikaku: '#b6c46a' };
+const BAJU = { manajer: '#c9b9e8', kuliah: '#e8dcc0', coding: '#3a4f8a', kerja: '#ff8f6b', maintenance: '#7fd1b9', logikaku: '#b6c46a', kebersihan: '#3fa69a' };
 const BAJU_LAIN = ['#7fd1b9', '#d98fb0', '#b6c46a', '#8fb3ff'];
 const LABEL = {
   kosong: null,
@@ -30,6 +30,8 @@ const KURANGI_GERAK = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Diisi bangunRuangan() karena bergantung pada ukuran ruangan.
 const kopi = { titik: null, uap: 0 };
 let tempatJalan = [];
+// Tempat sampah di samping setiap meja; dikosongkan petugas kebersihan.
+const tempatSampah = [];
 
 // Acak dengan benih tetap, supaya kota dan hujan selalu sama.
 function acak(benih) {
@@ -885,6 +887,15 @@ function bangunMeja(k, x, z, indeks) {
   // kursi
   kotak(0.7, 0.08, 0.7, WARNA.gelap2, 0, 0.55, -0.95, grup); kotak(0.7, 0.9, 0.08, WARNA.gelap2, 0, 1.05, -1.3, grup);
   tabung(0.05, 0.05, 0.5, WARNA.gelap2, 0, 0.27, -0.95, grup);
+  // tempat sampah kecil di samping kursi; isinya bertambah pelan-pelan
+  const sisiTong = x > 3 ? -1 : 1, bx = sisiTong * (besar ? 1.6 : 1.25), bz = -1.2;
+  const tong = new THREE.Group(); tong.position.set(bx, 0, bz); grup.add(tong);
+  tabung(0.19, 0.15, 0.42, mat(0x6a7699, { r: 0.6, m: 0.3 }), 0, 0.21, 0, tong);
+  tabung(0.2, 0.2, 0.03, 0x3a4566, 0, 0.43, 0, tong);
+  const kertas = [[-0.06, 0.05], [0.07, -0.04], [0, 0.07]].map(([dx, dz], i) => {
+    const b = bola(0.085, 0xf2efe6, dx, 0.44 + i * 0.05, dz, tong); b.scale.set(1, 0.8, 1.1); b.visible = false; return b;
+  });
+  tempatSampah.push({ id: k.id, x: x + bx, z: z + bz, isi: Math.random() * 0.8, laju: 0.008 + Math.random() * 0.012, kertas, manajer: besar });
   // karakter berhoodie: satu grup "orang" yang bisa berdiri, berjalan, dan menoleh.
   // Titik asal orang = pusat badan di lantai; saat duduk ia berada di kursi.
   const mBaju = mat(baju, { r: 0.9 });
@@ -1066,6 +1077,204 @@ function bangunMeja(k, x, z, indeks) {
   return { setStatus, animasi };
 }
 
+// ---------------------------------------------------------------- petugas kebersihan
+/**
+ * Cleaning service: mangkal di troli kebersihan, berkeliling menyapu dan
+ * mengosongkan tempat sampah yang paling penuh, lalu melapor ke pintu ruang
+ * manajer ("Boleh dibuang?") sebelum membuang kantong sampah ke tong besar.
+ */
+function bangunPetugas(k, pos, indeks) {
+  const rumah = { x: pos.x, z: pos.z };
+  const pintuManajer = tata.ruangManajer?.pintu || null;
+  const titikLapor = pintuManajer ? { x: pintuManajer.x, z: pintuManajer.z + 0.65 } : null;
+
+  // ---- troli kebersihan dan tong sampah besar di dekat dinding kiri
+  const troli = new THREE.Group(); troli.position.set(pos.x - 0.85, 0, pos.z); scene.add(troli);
+  kotak(0.6, 0.08, 1.1, 0x2a3242, 0, 0.25, 0, troli);
+  kotak(0.6, 0.08, 1.1, 0x2a3242, 0, 0.85, 0, troli);
+  for (const [dx, dz] of [[-0.27, -0.5], [0.27, -0.5], [-0.27, 0.5], [0.27, 0.5]]) {
+    kotak(0.05, 0.9, 0.05, 0xb0b8c8, dx, 0.5, dz, troli);
+    bola(0.07, 0x10141f, dx, 0.07, dz, troli);
+  }
+  tabung(0.22, 0.18, 0.36, 0xffd23a, 0, 0.47, -0.25, troli); // ember kuning
+  tabung(0.2, 0.2, 0.02, 0x7fd6ff, 0, 0.64, -0.25, troli);
+  kotak(0.3, 0.22, 0.25, 0x5ad1ff, -0.05, 1.0, 0.3, troli); // botol-botol pembersih
+  tabung(0.06, 0.06, 0.28, 0xff8f6b, 0.12, 1.03, -0.2, troli);
+  tabung(0.06, 0.06, 0.24, 0x6dff9a, -0.12, 1.01, -0.3, troli);
+  const pelGagang = tabung(0.025, 0.025, 1.6, 0x8a5a3c, 0.2, 1.0, 0.4, troli); pelGagang.rotation.x = -0.15; // gagang pel
+  kotak(0.35, 0.1, 0.14, 0xe8eef8, 0.2, 0.2, 0.52, troli);
+  // papan kuning "lantai basah" yang muncul saat mengepel
+  const papanBasah = new THREE.Group(); papanBasah.visible = false; scene.add(papanBasah);
+  for (const s of [-1, 1]) { const m = kotak(0.32, 0.55, 0.02, 0xffd23a, 0, 0.27, s * 0.09, papanBasah); m.rotation.x = s * 0.3; }
+  const tongBesar = new THREE.Group(); tongBesar.position.set(pos.x - 0.85, 0, pos.z - 1.05); scene.add(tongBesar);
+  tabung(0.3, 0.26, 0.75, 0x3f7a5e, 0, 0.38, 0, tongBesar);
+  tabung(0.32, 0.32, 0.05, 0x2f5e48, 0, 0.77, 0, tongBesar);
+  const tumpukan = bola(0.24, 0x141820, 0, 0.82, 0, tongBesar); tumpukan.scale.set(1, 0.6, 1); tumpukan.visible = false;
+
+  // ---- tubuh petugas: seragam toska, topi kuning, celemek
+  const orang = new THREE.Group(); orang.position.set(rumah.x, 0, rumah.z); orang.rotation.y = -Math.PI / 2; scene.add(orang);
+  const mBaju = mat(BAJU[k.id] || BAJU_LAIN[indeks % BAJU_LAIN.length], { r: 0.9 });
+  tabung(0.3, 0.38, 0.9, mBaju, 0, 1.05, 0, orang);
+  kotak(0.5, 0.6, 0.05, 0xe8dcc0, 0, 0.95, 0.3, orang).rotation.x = -0.12; // celemek
+  const kepala = new THREE.Group(); kepala.position.set(0, 1.76, 0); orang.add(kepala);
+  bola(0.27, WARNA.kulit, 0, 0, 0, kepala);
+  tabung(0.29, 0.29, 0.14, 0xffd23a, 0, 0.17, 0, kepala); // topi
+  kotak(0.36, 0.04, 0.24, 0xffd23a, 0, 0.11, 0.3, kepala); // lidah topi
+  const lengan = [-1, 1].map((s) => {
+    const poros = new THREE.Group(); poros.position.set(s * 0.32, 1.32, 0.05); orang.add(poros);
+    kotak(0.14, 0.14, 0.6, mBaju, 0, 0, 0.29, poros);
+    bola(0.08, WARNA.kulit, 0, 0, 0.6, poros);
+    return poros;
+  });
+  const mCelana = mat(0x1b2440, { r: 0.9 });
+  const kaki = [-1, 1].map((s) => {
+    const poros = new THREE.Group(); poros.position.set(s * 0.14, 0.62, 0); orang.add(poros);
+    kotak(0.16, 0.62, 0.18, mCelana, 0, -0.31, 0, poros);
+    kotak(0.17, 0.08, 0.26, 0x0a0f22, 0, -0.58, 0.05, poros);
+    return poros;
+  });
+  // sapu di tangan kanan, kantong sampah di tangan kiri
+  const sapu = new THREE.Group(); sapu.position.set(0, 0, 0.62); lengan[1].add(sapu);
+  const gagang = tabung(0.025, 0.025, 1.4, 0x8a5a3c, 0, -0.45, 0.08, sapu); gagang.rotation.x = 0.15;
+  kotak(0.5, 0.1, 0.12, 0x2a3242, 0, -1.12, 0.18, sapu);
+  kotak(0.52, 0.14, 0.1, 0xd9b26b, 0, -1.22, 0.2, sapu);
+  const kantong = bola(0.2, 0x141820, 0, -0.22, 0.62, lengan[0]); kantong.scale.set(1, 1.2, 1); kantong.visible = false;
+
+  // papan nama, status, dan gelembung ucapan ikut bergerak bersama petugas
+  const nama = papan(2.1); nama.position.set(0, 2.85, 0); orang.add(nama);
+  const status = papan(1.8); status.position.set(0, 2.4, 0); orang.add(status);
+  const ucap = papan(2.0); ucap.position.set(0, 3.35, 0); ucap.visible = false; orang.add(ucap);
+
+  orang.traverse((o) => { if (o.isMesh) { o.userData.id = k.id; target.push(o); } });
+  troli.traverse((o) => { if (o.isMesh) { o.userData.id = k.id; target.push(o); } });
+
+  let sekarang = 'kosong';
+  function setStatus(s) {
+    sekarang = s;
+    const aktif = s !== 'kosong';
+    nama.tulis(k.nama.toUpperCase(), { bg: 'rgba(10,17,40,.85)', fg: aktif ? '#ffcf7a' : '#7f93c9', garis: aktif ? '#ffb347' : '#3a4f8a', bulat: 8 });
+    const lb = LABEL[s];
+    status.visible = !!lb;
+    if (lb) status.tulis(lb.teks, { bg: lb.bg, fg: '#0a1128', ukuran: 64 });
+  }
+  const bicara = (teks, bg = '#e8dcc0') => { ucap.visible = !!teks; if (teks) ucap.tulis(teks, { bg, fg: '#0a1128', ukuran: 54 }); };
+
+  // ---- perilaku: diam -> jalan ke tong -> sapu -> angkat -> lapor -> pulang -> buang
+  const g = { mode: 'diam', waktu: 0, lama: 3, rute: [], i: 1, lanjut: null, tong: null, arah: 0 };
+  const jalan = (rute, lanjut, arah) => { g.rute = rute; g.i = 1; g.mode = 'jalan'; g.lanjut = lanjut; g.arah = arah; };
+  const mulai = (mode, lama) => { g.mode = mode; g.waktu = 0; g.lama = lama; };
+  function pilih() {
+    const t = sampahTerpenuh(tempatSampah, 0.34);
+    if (!t) { // tidak ada yang penuh: mengepel lantai di dekat troli
+      mulai('pel', 5 + Math.random() * 4);
+      papanBasah.position.set(rumah.x + 0.5, 0, rumah.z - 0.9); papanBasah.visible = true;
+      return;
+    }
+    g.tong = t;
+    const berdiri = { x: t.x, z: t.z - 0.7 };
+    g.ruteTong = ruteLorong(rumah, berdiri, t.manajer ? pintuManajer : null);
+    jalan(g.ruteTong, 'sapu', 0);
+  }
+  function langkah(dt, t) {
+    const tgt = g.rute[g.i];
+    const dx = tgt.x - orang.position.x, dz = tgt.z - orang.position.z, jarak = Math.hypot(dx, dz);
+    const maju = Math.min(jarak, dt * 1.4);
+    if (jarak > 1e-3) {
+      orang.position.x += (dx / jarak) * maju; orang.position.z += (dz / jarak) * maju;
+      let beda = Math.atan2(dx, dz) - orang.rotation.y; beda = Math.atan2(Math.sin(beda), Math.cos(beda));
+      orang.rotation.y += beda * Math.min(1, dt * 10);
+    }
+    const a = Math.sin(t * 8) * 0.45;
+    kaki[0].rotation.x = a; kaki[1].rotation.x = -a;
+    lengan[0].rotation.x = kantong.visible ? 1.45 : 1.3 - a * 0.5;
+    lengan[1].rotation.x = 1.0; sapu.rotation.x = 0.55; // sapu dibawa tegak
+    orang.position.y = Math.abs(Math.sin(t * 8)) * 0.04;
+    if (jarak - maju < 1e-3) g.i++;
+    return g.i >= g.rute.length;
+  }
+  const berdiriTegak = () => {
+    for (const kk of kaki) kk.rotation.x = 0;
+    orang.position.y = 0; orang.rotation.x = 0; sapu.rotation.set(0, 0, 0);
+  };
+  function perilaku(dt, t) {
+    for (const tg of tempatSampah) { // sampah bertambah pelan-pelan
+      tg.isi = Math.min(1, tg.isi + tg.laju * dt);
+      const n = Math.floor(tg.isi * 3.2);
+      tg.kertas.forEach((b, i) => { b.visible = i < n; });
+    }
+    kepala.rotation.y *= 1 - Math.min(1, dt * 3);
+    if (g.mode === 'jalan') {
+      if (langkah(dt, t)) {
+        berdiriTegak(); orang.rotation.y = g.arah;
+        const l = g.lanjut;
+        if (l === 'sapu') mulai('sapu', 3.2);
+        else if (l === 'lapor') { mulai('lapor', 4.2); bicara('Boleh dibuang?'); }
+        else if (l === 'buang') mulai('buang', 1.8);
+        else mulai('diam', 4 + Math.random() * 6);
+      }
+      return;
+    }
+    g.waktu += dt;
+    const f = g.waktu / g.lama;
+    if (g.mode === 'diam') {
+      // bersandar pada sapu sambil melihat sekeliling
+      lengan[1].rotation.x = 0.6; sapu.rotation.x = 0.9; lengan[0].rotation.x = 0.1;
+      kepala.rotation.y = Math.sin(g.waktu * 0.7) * 0.6;
+      if (g.waktu > g.lama && !KURANGI_GERAK) pilih();
+    } else if (g.mode === 'pel') {
+      // mengepel: badan maju-mundur, lengan mendorong
+      const ay = Math.sin(g.waktu * 5);
+      lengan[0].rotation.x = lengan[1].rotation.x = 1.0 + ay * 0.35;
+      sapu.rotation.x = 0.5; sapu.rotation.z = ay * 0.3;
+      orang.rotation.x = 0.12 + ay * 0.05;
+      if (g.waktu > g.lama) { berdiriTegak(); papanBasah.visible = false; mulai('diam', 3 + Math.random() * 4); }
+    } else if (g.mode === 'sapu') {
+      // menyapu di sekitar tempat sampah: sapu diayun ke kiri-kanan
+      const ay = Math.sin(g.waktu * 7);
+      lengan[1].rotation.x = 0.9 + Math.abs(ay) * 0.2; lengan[0].rotation.x = 1.0;
+      sapu.rotation.x = 0.25; sapu.rotation.z = ay * 0.55;
+      orang.rotation.x = 0.1; kepala.rotation.y = ay * 0.15;
+      if (g.waktu > g.lama) { berdiriTegak(); mulai('angkat', 1.6); }
+    } else if (g.mode === 'angkat') {
+      // membungkuk, mengangkat kantong dari tempat sampah
+      const turun = Math.sin(Math.min(1, f) * Math.PI);
+      orang.rotation.x = 0.45 * turun; lengan[0].rotation.x = 1.2 + 0.4 * turun;
+      if (f > 0.5 && !kantong.visible) { kantong.visible = true; g.tong.isi = 0; }
+      if (g.waktu > g.lama) {
+        berdiriTegak();
+        // kembali lewat jalan yang sama, lalu ke pintu ruang manajer untuk konfirmasi
+        const balik = [...g.ruteTong].reverse();
+        if (titikLapor) jalan([...balik, ...ruteLorong(rumah, titikLapor).slice(1)], 'lapor', Math.PI);
+        else jalan(balik, 'buang', -Math.PI / 2);
+      }
+    } else if (g.mode === 'lapor') {
+      // menunjuk kantong ke arah manajer, menunggu jawaban
+      lengan[0].rotation.x = 1.1; lengan[1].rotation.x = 0.8; sapu.rotation.x = 0.7;
+      kepala.rotation.y = Math.sin(g.waktu * 1.5) * 0.15;
+      if (g.waktu > 2.4 && ucap.visible && g.oke !== true) { g.oke = true; bicara('OK, buang ✓', '#6dff9a'); }
+      if (g.waktu > g.lama) {
+        g.oke = false; bicara(null);
+        jalan([...ruteLorong(rumah, titikLapor)].reverse(), 'buang', -Math.PI / 2);
+      }
+    } else if (g.mode === 'buang') {
+      // melempar kantong ke tong besar
+      lengan[0].rotation.x = 1.2 + Math.sin(Math.min(1, f) * Math.PI) * 1.2;
+      if (f > 0.55 && kantong.visible) { kantong.visible = false; tumpukan.visible = true; }
+      if (g.waktu > g.lama) { berdiriTegak(); mulai('diam', 4 + Math.random() * 6); }
+    }
+  }
+
+  function animasi(t, dt = 0) {
+    perilaku(dt, t);
+    const s = sekarang;
+    // status ikut terlihat dari warna topi saat sedang bertugas
+    status.position.y = 2.4 + (s === 'butuh-input' ? Math.sin(t * 2.4) * 0.05 : 0);
+  }
+  setStatus('kosong');
+  mulai('diam', 2 + Math.random() * 3);
+  return { setStatus, animasi };
+}
+
 // ---------------------------------------------------------------- kamera
 let tata = { lebar: 14, dalam: 10 };
 function ukurUlang() {
@@ -1129,7 +1338,13 @@ async function mulai() {
   const animasiRuangan = bangunRuangan(tata.lebar, tata.dalam);
   if (tata.ruangManajer) bangunRuangManajer(tata.ruangManajer, posisi0(tata, 'manajer'));
   const posisi = Object.fromEntries(tata.meja.map((m) => [m.id, m]));
-  data.karyawan.forEach((k, i) => { keadaan.meja[k.id] = bangunMeja(k, posisi[k.id].x, posisi[k.id].z, i); });
+  data.karyawan.forEach((k, i) => {
+    if (k.id !== PETUGAS) keadaan.meja[k.id] = bangunMeja(k, posisi[k.id].x, posisi[k.id].z, i);
+  });
+  // petugas kebersihan dibangun terakhir, setelah semua tempat sampah ada
+  data.karyawan.forEach((k, i) => {
+    if (k.id === PETUGAS) keadaan.meja[k.id] = bangunPetugas(k, posisi[k.id], i);
+  });
 
   kamera.position.set(66, 57, 66); // jauh, supaya gedung di sekitar tidak terpotong bidang dekat kamera
   kontrol.target.set(0, 0.6, 0.4);

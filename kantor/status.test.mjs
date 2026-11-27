@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   tanggalWIB, detikHari, formatJam, hariIniWIB, daftarTanggal, laporanPada,
-  statusPada, ringkasHari, tautan, tataMeja, rencanaRute, menganggur, LORONG_X, MANAJER_X,
+  statusPada, ringkasHari, tautan, tataMeja, rencanaRute, menganggur, LORONG_X, MANAJER_X, ruteLorong, sampahTerpenuh, PETUGAS,
 } from './status.js';
 
 const L = (waktu, agen, status) => ({ waktu, agen, status, tugas: 't', ringkasan: 'r', hasil: [] });
@@ -120,6 +120,34 @@ test('rute manajer keluar lewat pintu ruangannya', () => {
   for (const p of rute.slice(0, i)) assert.ok(p.z < pintu.z && p.x <= t.ruangManajer.x1, JSON.stringify(p));
   for (let j = 1; j < rute.length; j++) assert.ok(rute[j].x === rute[j - 1].x || rute[j].z === rute[j - 1].z, `ruas ${j}`);
   assert.deepEqual(rute.at(-1), { x: 5.6, z: -5.2 });
+});
+
+test('petugas kebersihan tidak dapat meja di baris departemen', () => {
+  const k = (id) => ({ id });
+  const t = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja'), k(PETUGAS)]);
+  const tanpa = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja')]);
+  const p = t.meja.find((d) => d.id === PETUGAS);
+  assert.ok(p.x < -5 && p.z > 0, 'mangkal di kiri depan');
+  assert.deepEqual(t.meja.filter((d) => d.id !== PETUGAS), tanpa.meja);
+  assert.equal(t.dalam, tanpa.dalam);
+});
+
+test('rute petugas lewat lorong kiri, dan lewat pintu ke ruang manajer', () => {
+  const lurus = (r) => r.every((p, i) => i === 0 || p.x === r[i - 1].x || p.z === r[i - 1].z);
+  const r = ruteLorong({ x: -5.6, z: 4.4 }, { x: 1.25, z: -2.4 });
+  assert.ok(lurus(r));
+  assert.ok(r.some((p) => p.x === -LORONG_X));
+  const pintu = { x: 2.2, z: -2.85 };
+  const m = ruteLorong({ x: -5.6, z: 4.4 }, { x: 0.4, z: -6.3 }, pintu);
+  assert.ok(lurus(m));
+  assert.ok(m.some((p) => p.x === pintu.x && p.z > pintu.z), 'lewat depan pintu');
+  assert.deepEqual(m.at(-1), { x: 0.4, z: -6.3 });
+});
+
+test('tempat sampah terpenuh dikosongkan duluan', () => {
+  assert.equal(sampahTerpenuh([{ isi: 0.1 }, { isi: 0.2 }]), null);
+  const t = [{ id: 'a', isi: 0.5 }, { id: 'b', isi: 0.9 }, { id: 'c', isi: 0.4 }];
+  assert.equal(sampahTerpenuh(t).id, 'b');
 });
 
 test('menganggur hanya untuk kosong dan selesai', () => {
