@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T15:04:53+07:00",
+  "agen": "logikaku",
+  "tugas": "Buat kotak berbintik di hero landing LogikaKu tidak melebihi tinggi layar",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Kotak hero desktop sekarang setinggi layar (640 sampai 1000px) dengan isi di tengah. Kartu kuis dan flowchart hanya muncul di layar tinggi, kartu lain dikecilkan di layar pendek. Dicek di enam ukuran layar dari 1280x720 sampai 2560x1440 tanpa galat JS.",
+  "hasil": ["PR #3 di repo LogikaKu: https://github.com/diasss-msy/LogikaKu/pull/3", "Library coding/logikaku/potret/landing-pas-layar/"]
+}
