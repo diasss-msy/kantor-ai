@@ -1,0 +1,30 @@
+[
+  {
+    "id": "manajer",
+    "nama": "Manajer",
+    "departemen": "Manajer",
+    "tugas": "Memilih departemen, memberi nama thread, meneruskan pesanan kode ke Coding, dan merangkum hasil",
+    "jam_kerja": "08:00–16:00"
+  },
+  {
+    "id": "kuliah",
+    "nama": "Kuliah",
+    "departemen": "Kuliah",
+    "tugas": "Riset dengan sumber nyata dan menulis laporan kuliah dalam .docx dan .pdf",
+    "jam_kerja": "08:00–16:00"
+  },
+  {
+    "id": "coding",
+    "nama": "Coding",
+    "departemen": "Coding",
+    "tugas": "Menulis dan mengubah kode, menjalankan tes, dan mengirim perubahan lewat PR",
+    "jam_kerja": "08:00–16:00"
+  },
+  {
+    "id": "kerja",
+    "nama": "Kerja",
+    "departemen": "Kerja",
+    "tugas": "Proyek klien, pekerjaan, dan proyek pribadi: desain lewat Figma atau mockup HTML, dan mengatur proyek",
+    "jam_kerja": "08:00–16:00"
+  }
+]
