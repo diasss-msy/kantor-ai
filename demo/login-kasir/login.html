@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login Kasir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=DM+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #15130F;
+    --paper: #F3EEE2;
+    --slip: #FBF8F1;
+    --field: #FFFDF8;
+    --accent: #FF4F1A;
+    --muted: #6E685B;
+    --error: #C8261B;
+    --ok: #2E9E5B;
+    --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+    --sans: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+  .layout { display: grid; grid-template-columns: 600px 1fr; min-height: 100vh; }
+
+  /* ---------- Panel kiri ---------- */
+  .kiri {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 64px 64px 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+  .brand { display: flex; align-items: center; justify-content: space-between; }
+  .logo { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 700; font-size: 26px; letter-spacing: 0.02em; }
+  .logo::before { content: ""; width: 16px; height: 16px; background: var(--accent); }
+  .versi { font-family: var(--mono); font-size: 12px; color: #9D9686; letter-spacing: 0.04em; }
+
+  .struk {
+    width: 360px;
+    margin: 56px 0 0 0;
+    background: var(--slip);
+    color: var(--ink);
+    padding: 26px 28px 40px;
+    font-family: var(--mono);
+    font-size: 13px;
+    transform: rotate(-3deg);
+    transform-origin: top left;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px),
+      97.5% 100%, 95% calc(100% - 12px), 92.5% 100%, 90% calc(100% - 12px), 87.5% 100%, 85% calc(100% - 12px),
+      82.5% 100%, 80% calc(100% - 12px), 77.5% 100%, 75% calc(100% - 12px), 72.5% 100%, 70% calc(100% - 12px),
+      67.5% 100%, 65% calc(100% - 12px), 62.5% 100%, 60% calc(100% - 12px), 57.5% 100%, 55% calc(100% - 12px),
+      52.5% 100%, 50% calc(100% - 12px), 47.5% 100%, 45% calc(100% - 12px), 42.5% 100%, 40% calc(100% - 12px),
+      37.5% 100%, 35% calc(100% - 12px), 32.5% 100%, 30% calc(100% - 12px), 27.5% 100%, 25% calc(100% - 12px),
+      22.5% 100%, 20% calc(100% - 12px), 17.5% 100%, 15% calc(100% - 12px), 12.5% 100%, 10% calc(100% - 12px),
+      7.5% 100%, 5% calc(100% - 12px), 2.5% 100%, 0 calc(100% - 12px));
+  }
+  .struk h2 { font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.08em; margin: 0 0 14px; }
+  .struk .baris { display: flex; justify-content: space-between; margin: 6px 0; }
+  .struk .putus { border-top: 1.5px dashed var(--ink); margin: 10px 0; }
+  .struk b { font-weight: 600; }
+  .struk .total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 18px; }
+  .struk .total span:first-child { font-weight: 600; letter-spacing: 0.08em; }
+  .struk .total strong { font-family: var(--display); font-size: 32px; }
+  .struk .catatan { color: var(--muted); font-size: 12px; margin-top: 14px; }
+
+  .headline { font-family: var(--display); font-weight: 700; font-size: 56px; line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 24px; }
+  .headline em { font-style: normal; color: var(--accent); }
+  .kaki-kiri { font-family: var(--mono); font-size: 12px; color: #9D9686; margin: 0; }
+
+  /* ---------- Panel kanan ---------- */
+  .kanan { display: flex; flex-direction: column; padding: 40px 56px; min-height: 100vh; }
+  .meta { display: flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--muted); }
+  .status { display: flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 500; }
+  .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  .tengah { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 0; }
+  form { width: 400px; max-width: 100%; }
+  .eyebrow { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--accent); margin: 0 0 12px; }
+  h1 { font-family: var(--display); font-weight: 700; font-size: 52px; letter-spacing: -0.02em; line-height: 1.05; margin: 0 0 12px; }
+  .sub { font-size: 16px; line-height: 1.55; color: var(--muted); margin: 0 0 36px; }
+
+  .isian { margin-bottom: 24px; }
+  .label-baris { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .label-baris label { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .label-baris span { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .kotak {
+    position: relative;
+    display: flex; align-items: center;
+    height: 56px;
+    background: var(--field);
+    border: 1.5px solid var(--ink);
+  }
+  /* 1.5px garis + 1px bayangan dalam = 2.5px, tanpa menggeser isi */
+  .kotak:focus-within { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .kotak.error, .kotak.error:focus-within { border-color: var(--error); box-shadow: inset 0 0 0 1px var(--error); }
+  .kotak input {
+    flex: 1; min-width: 0; height: 100%;
+    border: 0; background: transparent; outline: none;
+    padding: 0 18px;
+    font-family: var(--sans); font-size: 17px; color: var(--ink);
+  }
+  .kotak input::placeholder { color: #A9A293; }
+  .lihat {
+    border: 0; background: none; cursor: pointer;
+    font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.08em; color: var(--ink);
+    padding: 0 18px; height: 100%;
+  }
+  .lihat:focus-visible { outline: 2.5px solid var(--accent); outline-offset: -6px; }
+  .pesan { font-family: var(--sans); font-weight: 500; font-size: 14px; color: var(--error); margin: 8px 0 0; min-height: 0; }
+  .pesan:empty { display: none; }
+
+  .opsi { display: flex; justify-content: space-between; align-items: center; margin: 8px 0 28px; font-size: 15px; }
+  .cek { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .cek input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+  .cek input:focus-visible, a:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 2px; }
+  a { color: var(--ink); text-underline-offset: 3px; font-weight: 500; }
+
+  .tombol {
+    width: 100%; height: 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 20px;
+    background: var(--accent); color: var(--ink);
+    border: 1.5px solid var(--ink); border-radius: 0;
+    box-shadow: 4px 4px 0 var(--ink);
+    font-family: var(--sans); font-weight: 700; font-size: 17px;
+    cursor: pointer;
+  }
+  .tombol:active:not(:disabled) { box-shadow: none; transform: translate(4px, 4px); }
+  .tombol:focus-visible { outline: 2.5px solid var(--ink); outline-offset: 4px; }
+  .tombol:disabled { background: #D8D1C2; color: var(--muted); box-shadow: none; cursor: not-allowed; }
+  .catatan-kunci { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 28px 0 0; }
+  .sukses {
+    font-weight: 500; font-size: 15px; color: var(--ink);
+    border: 1.5px solid var(--ink); border-left: 6px solid var(--ok);
+    background: var(--field); padding: 14px 16px; margin: 20px 0 0;
+  }
+  .sukses[hidden] { display: none; }
+
+  .kaki { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; color: var(--muted); gap: 16px; }
+
+  /* ---------- HP / layar kecil ---------- */
+  @media (max-width: 899px) {
+    .layout { grid-template-columns: 1fr; }
+    .kiri { padding: 20px 24px; }
+    .struk, .headline, .kaki-kiri { display: none; }
+    .logo { font-size: 22px; }
+    .kanan { padding: 24px; min-height: auto; }
+    .meta { flex-wrap: wrap; gap: 8px; }
+    .tengah { padding: 32px 0; align-items: flex-start; }
+    form { width: 100%; }
+    h1 { font-size: 40px; }
+    .kaki { flex-direction: column; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="kiri">
+    <div class="brand">
+      <div class="logo">KASIR</div>
+      <div class="versi">POS · v1.0</div>
+    </div>
+
+    <div class="struk" aria-hidden="true">
+      <h2>STRUK BUKA SHIFT</h2>
+      <div class="baris"><span>No. 0001</span><span>27/11/2026</span></div>
+      <div class="putus"></div>
+      <div class="baris"><span>Kasir</span><span>— belum masuk —</span></div>
+      <div class="baris"><span>Shift</span><span>PAGI 08.00</span></div>
+      <div class="baris"><b>Laci</b><b>TERKUNCI</b></div>
+      <div class="putus"></div>
+      <div class="total"><span>TOTAL</span><strong>Rp 0</strong></div>
+      <div class="catatan">* Masuk untuk membuka laci.</div>
+    </div>
+
+    <div>
+      <p class="headline">Satu shift,<br>satu laci,<br><em>nol selisih.</em></p>
+      <p class="kaki-kiri">Login khusus kasir. Data shift dicatat otomatis.</p>
+    </div>
+  </aside>
+
+  <main class="kanan">
+    <div class="meta">
+      <span>PERANGKAT KASIR-01 · TOKO PUSAT</span>
+      <span class="status">TERHUBUNG</span>
+    </div>
+
+    <div class="tengah">
+      <form id="form-login" novalidate>
+        <p class="eyebrow">01 — MASUK SHIFT</p>
+        <h1>Selamat bekerja.</h1>
+        <p class="sub">Masuk dengan ID kasir dan PIN 6 digit dari supervisor toko.</p>
+
+        <div class="isian">
+          <div class="label-baris"><label for="id-kasir">ID kasir</label><span>Wajib</span></div>
+          <div class="kotak" id="kotak-id">
+            <input id="id-kasir" name="id_kasir" type="text" placeholder="KSR-014" autocomplete="username" required aria-describedby="pesan-id">
+          </div>
+          <p class="pesan" id="pesan-id" aria-live="polite"></p>
+        </div>
+
+        <div class="isian">
+          <div class="label-baris"><label for="pin">PIN</label><span>6 digit</span></div>
+          <div class="kotak" id="kotak-pin">
+            <input id="pin" name="pin" type="password" inputmode="numeric" maxlength="6" placeholder="••••••" autocomplete="current-password" required aria-describedby="pesan-pin">
+            <button type="button" class="lihat" id="lihat" aria-controls="pin" aria-pressed="false">LIHAT</button>
+          </div>
+          <p class="pesan" id="pesan-pin" aria-live="polite"></p>
+        </div>
+
+        <div class="opsi">
+          <label class="cek"><input type="checkbox" name="ingat" checked> Ingat perangkat ini</label>
+          <a href="#">Lupa PIN?</a>
+        </div>
+
+        <button type="submit" class="tombol" id="masuk"><span>Masuk &amp; buka shift</span><span aria-hidden="true">→</span></button>
+        <p class="sukses" id="sukses" role="status" hidden></p>
+        <p class="catatan-kunci">Akun terkunci setelah 3 kali PIN salah.</p>
+      </form>
+    </div>
+
+    <div class="kaki">
+      <span>© 2026 Kasir</span>
+      <span>Butuh bantuan? Panggil supervisor.</span>
+    </div>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var PIN_DEMO = "123456";
+    var BATAS = 3;
+    var salah = 0;
+
+    var form = document.getElementById("form-login");
+    var idKasir = document.getElementById("id-kasir");
+    var pin = document.getElementById("pin");
+    var kotakId = document.getElementById("kotak-id");
+    var kotakPin = document.getElementById("kotak-pin");
+    var pesanId = document.getElementById("pesan-id");
+    var pesanPin = document.getElementById("pesan-pin");
+    var lihat = document.getElementById("lihat");
+    var masuk = document.getElementById("masuk");
+    var sukses = document.getElementById("sukses");
+
+    function setError(kotak, pesanEl, input, teks) {
+      kotak.classList.toggle("error", !!teks);
+      input.setAttribute("aria-invalid", teks ? "true" : "false");
+      pesanEl.textContent = teks || "";
+    }
+
+    lihat.addEventListener("click", function () {
+      var tampil = pin.type === "password";
+      pin.type = tampil ? "text" : "password";
+      lihat.textContent = tampil ? "TUTUP" : "LIHAT";
+      lihat.setAttribute("aria-pressed", String(tampil));
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (salah >= BATAS) return;
+      sukses.hidden = true;
+
+      var id = idKasir.value.trim();
+      var nilaiPin = pin.value;
+      var valid = true;
+
+      if (!id) {
+        setError(kotakId, pesanId, idKasir, "ID kasir wajib diisi.");
+        valid = false;
+      } else {
+        setError(kotakId, pesanId, idKasir, "");
+      }
+
+      if (!/^\d{6}$/.test(nilaiPin)) {
+        setError(kotakPin, pesanPin, pin, "PIN harus 6 digit angka.");
+        if (valid) pin.focus();
+        valid = false;
+      }
+
+      if (!id) { idKasir.focus(); }
+      if (!valid) return;
+
+      if (nilaiPin === PIN_DEMO) {
+        salah = 0;
+        setError(kotakPin, pesanPin, pin, "");
+        sukses.textContent = "Berhasil masuk sebagai " + id + ". Shift dibuka, laci siap dipakai.";
+        sukses.hidden = false;
+        return;
+      }
+
+      salah += 1;
+      var sisa = BATAS - salah;
+      if (sisa > 0) {
+        setError(kotakPin, pesanPin, pin, "PIN salah. Sisa " + sisa + " percobaan sebelum akun dikunci.");
+        pin.select();
+      } else {
+        setError(kotakPin, pesanPin, pin, "Akun terkunci. Panggil supervisor.");
+        masuk.disabled = true;
+        pin.disabled = true;
+        lihat.disabled = true;
+      }
+    });
+  })();
+</script>
+</body>
+</html>
