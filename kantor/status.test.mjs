@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   tanggalWIB, detikHari, formatJam, hariIniWIB, daftarTanggal, laporanPada,
-  statusPada, ringkasHari, tautan, tataMeja,
+  statusPada, ringkasHari, tautan, tataMeja, rencanaRute, menganggur, LORONG_X,
 } from './status.js';
 
 const L = (waktu, agen, status) => ({ waktu, agen, status, tugas: 't', ringkasan: 'r', hasil: [] });
@@ -82,4 +82,22 @@ test('tata meja: manajer di belakang, lainnya tiga per baris', () => {
   assert.equal(new Set(lain.map((d) => d.z)).size, 1, 'empat departemen dalam satu baris');
   assert.deepEqual(lain.map((d) => +d.x.toFixed(2)), [-5.1, -1.7, 1.7, 5.1]);
   assert.equal(t3.dalam, t.dalam);
+});
+
+test('rute jalan: kursi -> lorong belakang meja -> lorong samping -> tujuan', () => {
+  const r = rencanaRute({ x: -4.2, z: -1.35 }, { x: 5.6, z: -5 });
+  assert.deepEqual(r[0], { x: -4.2, z: -1.35 });
+  assert.deepEqual(r[1], { x: -3.6, z: -1.35 });
+  assert.equal(+r[2].z.toFixed(2), -2.4);
+  assert.equal(r[3].x, LORONG_X);
+  assert.deepEqual(r.at(-1), { x: 5.6, z: -5 });
+  // setiap ruas lurus (sejajar sumbu x atau z)
+  for (let i = 1; i < r.length; i++) assert.ok(r[i].x === r[i - 1].x || r[i].z === r[i - 1].z, `ruas ${i}`);
+  const kiri = rencanaRute({ x: 2.1, z: 2.65 }, { x: -5.6, z: -3.5 });
+  assert.equal(kiri[3].x, -LORONG_X);
+});
+
+test('menganggur hanya untuk kosong dan selesai', () => {
+  assert.ok(menganggur('kosong') && menganggur('selesai'));
+  assert.ok(!menganggur('dikerjakan') && !menganggur('butuh-input') && !menganggur('gagal'));
 });

@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import {
-  SEHARI, daftarTanggal, formatJam, hariIniWIB, laporanPada, ringkasHari, statusPada, tataMeja,
+  SEHARI, daftarTanggal, formatJam, hariIniWIB, laporanPada, LORONG_X, menganggur, rencanaRute, ringkasHari, statusPada, tataMeja,
 } from './status.js';
 import { bukaPanel, isiInfo, isiRingkas, isiTanggal, tampilGalat, tutupPanel } from './panel.js';
 
@@ -25,6 +25,11 @@ const LABEL = {
 };
 const FONT = '"Inter Display", Inter, system-ui, sans-serif';
 const DURASI_TIMELAPSE = 20; // detik untuk satu hari
+const KURANGI_GERAK = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Mesin kopi dan tempat-tempat yang didatangi pegawai yang menganggur (koordinat dunia).
+// Diisi bangunRuangan() karena bergantung pada ukuran ruangan.
+const kopi = { titik: null, uap: 0 };
+let tempatJalan = [];
 
 // Acak dengan benih tetap, supaya kota dan hujan selalu sama.
 function acak(benih) {
@@ -285,6 +290,39 @@ function bangunRuangan(lebar, dalam) {
   tabung(0.15, 0.35, 0.4, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.6 }), -RX + 0.7, 2.5, -RZ + 0.7);
   const lampuLantai = new THREE.PointLight(0xffa640, 3, 5, 1.6); lampuLantai.position.set(-RX + 0.8, 2.2, -RZ + 0.8); scene.add(lampuLantai);
 
+  // ---- pojok kopi di kanan belakang: lemari, mesin espresso, cangkir, uap
+  const kx = RX - 0.45, kz = -RZ + 2.1;
+  kotak(0.8, 1.0, 1.8, WARNA.gelap, kx, 0.5, kz);
+  kotak(0.86, 0.06, 1.86, 0x8a5a3c, kx, 1.03, kz);
+  for (const dz of [-0.45, 0.45]) kotak(0.02, 0.7, 0.75, WARNA.gelap2, kx - 0.41, 0.48, kz + dz);
+  const mesin = new THREE.Group(); mesin.position.set(kx, 1.06, kz - 0.3); scene.add(mesin);
+  kotak(0.5, 0.65, 0.55, 0xb0b8c8, 0, 0.33, 0, mesin);
+  kotak(0.52, 0.12, 0.57, 0xd9532b, 0, 0.7, 0, mesin);
+  kotak(0.2, 0.08, 0.3, 0x0a0f22, -0.27, 0.42, 0, mesin);
+  tabung(0.04, 0.04, 0.12, 0x2a3242, -0.27, 0.32, 0, mesin);
+  kotak(0.22, 0.03, 0.3, 0x2a3242, -0.27, 0.03, 0, mesin);
+  const mLampuKopi = mat(0x6dff9a, { e: 0x6dff9a, ei: 0.4 });
+  bola(0.03, mLampuKopi, -0.26, 0.58, 0.18, mesin);
+  tabung(0.06, 0.05, 0.1, WARNA.krem, -0.27, 0.1, 0, mesin); // cangkir di bawah corong
+  for (let i = 0; i < 4; i++) tabung(0.06, 0.05, 0.11, [WARNA.krem, 0xff8f6b, 0x5ad1ff, 0xc9b9e8][i], kx - 0.15 + (i % 2) * 0.2, 1.12, kz + 0.35 + Math.floor(i / 2) * 0.22);
+  kotak(0.3, 0.35, 0.25, 0x5b3f7a, kx + 0.05, 1.23, kz + 0.75); // stoples biji kopi
+  const mUap = new THREE.MeshBasicMaterial({ color: 0xe8eef8, transparent: true, opacity: 0, depthWrite: false });
+  const uap = Array.from({ length: 6 }, (_, i) => {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), mUap.clone());
+    b.position.set(-0.27, 0.2 + i * 0.12, 0); b.userData.fase = i / 6; mesin.add(b); return b;
+  });
+  const lampuKopi = new THREE.PointLight(0xffa640, 0, 2.5, 1.8); lampuKopi.position.set(kx - 0.6, 1.8, kz - 0.3); scene.add(lampuKopi);
+  kopi.titik = { x: LORONG_X - 0.1, z: kz - 0.3, arah: Math.PI / 2 };
+
+  // tempat yang didatangi pegawai yang sedang jalan-jalan (arah = hadap tubuh, radian)
+  tempatJalan = [
+    { x: 2.2, z: RZ - 0.8, arah: 0 }, // jendela depan
+    { x: -1.2, z: -RZ + 0.7, arah: Math.PI }, // jendela belakang
+    { x: -RX + 1.3, z: -RZ + 3.5, arah: -Math.PI / 2 }, // rak buku
+    { x: RX - 1.3, z: RZ - 0.8, arah: Math.PI / 2 }, // dispenser
+    { x: LORONG_X, z: 1.6, arah: Math.PI / 2 }, // papan tulis dari jauh
+  ];
+
   // tanaman
   tabung(0.3, 0.25, 0.6, WARNA.gelap, RX - 0.8, 0.3, -RZ + 0.8);
   for (let i = 0; i < 6; i++) {
@@ -325,6 +363,16 @@ function bangunRuangan(lebar, dalam) {
     }
     gHujan.attributes.position.needsUpdate = true;
     for (const m of hujanKaca) { m.position.y -= dt * 1.2; if (m.position.y < 1.7) m.position.y += 2.6; }
+    // mesin kopi mengepul saat ada yang menyeduh
+    kopi.uap = Math.max(0, kopi.uap - dt);
+    const aktif = kopi.uap > 0;
+    lampuKopi.intensity = aktif ? 2.5 : 0; mLampuKopi.emissiveIntensity = aktif ? 2.5 : 0.4;
+    for (const b of uap) {
+      b.userData.fase = (b.userData.fase + dt * 0.6) % 1;
+      const f = b.userData.fase;
+      b.position.y = 0.2 + f * 0.9; b.scale.setScalar(0.6 + f * 1.6);
+      b.material.opacity = aktif ? 0.35 * (1 - f) : 0;
+    }
   };
 }
 
@@ -370,16 +418,31 @@ function bangunMeja(k, x, z, indeks) {
   // kursi
   kotak(0.7, 0.08, 0.7, WARNA.gelap2, 0, 0.55, -0.95, grup); kotak(0.7, 0.9, 0.08, WARNA.gelap2, 0, 1.05, -1.3, grup);
   tabung(0.05, 0.05, 0.5, WARNA.gelap2, 0, 0.27, -0.95, grup);
-  // karakter berhoodie
+  // karakter berhoodie: satu grup "orang" yang bisa berdiri, berjalan, dan menoleh.
+  // Titik asal orang = pusat badan di lantai; saat duduk ia berada di kursi.
   const mBaju = mat(baju, { r: 0.9 });
-  tabung(0.32, 0.4, 0.9, mBaju, 0, 1.05, -0.85, grup);
-  bola(0.27, WARNA.kulit, 0, 1.76, -0.85, grup);
-  bola(0.31, mBaju, 0, 1.82, -0.92, grup).scale.set(1, 0.9, 1);
+  const KURSI = new THREE.Vector3(0, 0, -0.85);
+  const orang = new THREE.Group(); orang.position.copy(KURSI); grup.add(orang);
+  tabung(0.32, 0.4, 0.9, mBaju, 0, 1.05, 0, orang);
+  const kepala = new THREE.Group(); kepala.position.set(0, 1.76, 0); orang.add(kepala);
+  bola(0.27, WARNA.kulit, 0, 0, 0, kepala);
+  bola(0.31, mBaju, 0, 0.06, -0.07, kepala).scale.set(1, 0.9, 1);
   const lengan = [-1, 1].map((s) => {
-    const poros = new THREE.Group(); poros.position.set(s * 0.3, 1.32, -0.75); grup.add(poros);
+    const poros = new THREE.Group(); poros.position.set(s * 0.3, 1.32, 0.1); orang.add(poros);
     const l = kotak(0.14, 0.14, 0.62, mBaju, 0, 0, 0.3, poros); l.castShadow = true;
     return poros;
   });
+  const mCelana = mat(0x1b2440, { r: 0.9 });
+  const kaki = [-1, 1].map((s) => {
+    const poros = new THREE.Group(); poros.position.set(s * 0.14, 0.62, 0); orang.add(poros);
+    kotak(0.16, 0.62, 0.18, mCelana, 0, -0.31, 0, poros);
+    kotak(0.17, 0.08, 0.26, 0x0a0f22, 0, -0.58, 0.05, poros);
+    poros.visible = false; // saat duduk kaki tersembunyi di bawah meja
+    return poros;
+  });
+  // cangkir kopi di tangan kanan (ujung lengan)
+  const cangkir = tabung(0.07, 0.06, 0.13, WARNA.krem, 0, 0.02, 0.62, lengan[1]);
+  cangkir.visible = false;
 
   // papan nama dan status
   const nama = papan(2.1); nama.position.set(0, besar ? 3.0 : 2.75, 0.2); grup.add(nama);
@@ -405,14 +468,118 @@ function bangunMeja(k, x, z, indeks) {
     mLayar.emissive.set(s === 'kosong' ? 0x0a1128 : warnaLayar);
     cahayaLayar.color.set(warnaLayar);
     for (const p of lengan) p.rotation.x = 0;
+    if (!menganggur(s) && gerak.mode !== 'duduk') pulang(); // ada tugas: kembali ke meja
   }
 
-  function animasi(t) {
+  // ---- perilaku acak: animasi di meja, jalan-jalan, dan ambil kopi
+  const dunia = (v) => ({ x: v.x + x, z: v.z + z }); // lokal grup -> dunia
+  const gerak = { mode: 'duduk', rute: [], i: 0, tunggu: 2 + Math.random() * 8, aksi: null, tujuan: null, waktu: 0, minum: 0 };
+  const kursiDunia = dunia(KURSI);
+  function mulaiJalan(tujuan, aksi) {
+    gerak.rute = rencanaRute(kursiDunia, tujuan).map((p) => ({ x: p.x - x, z: p.z - z }));
+    gerak.i = 1; gerak.mode = 'pergi'; gerak.aksi = aksi; gerak.tujuan = tujuan;
+    for (const kk of kaki) kk.visible = true;
+  }
+  function pulang() {
+    if (gerak.mode === 'duduk' || gerak.mode === 'pulang') return;
+    // balik lewat titik-titik yang sudah dilewati
+    const sudah = gerak.mode === 'pergi' ? gerak.rute.slice(0, gerak.i) : gerak.rute;
+    gerak.rute = [{ x: orang.position.x, z: orang.position.z }, ...sudah.reverse()];
+    gerak.i = 1; gerak.mode = 'pulang';
+  }
+  function pilihKegiatan() {
+    const r = Math.random();
+    if (menganggur(sekarang) && !KURANGI_GERAK && r < 0.45) {
+      if (Math.random() < 0.5 && kopi.titik) mulaiJalan(kopi.titik, 'kopi');
+      else {
+        const t = tempatJalan[Math.floor(Math.random() * tempatJalan.length)];
+        mulaiJalan({ x: t.x + (Math.random() - 0.5) * 0.6, z: t.z + (Math.random() - 0.5) * 0.4, arah: t.arah }, 'lihat');
+      }
+      return;
+    }
+    // animasi kecil di meja
+    gerak.aksi = ['meregang', 'menoleh', 'menoleh', 'bersandar'][Math.floor(Math.random() * 4)];
+    gerak.waktu = 0; gerak.mode = 'gaya';
+  }
+  function langkah(dt, t) {
+    const tgt = gerak.rute[gerak.i];
+    const dx = tgt.x - orang.position.x, dz = tgt.z - orang.position.z, jarak = Math.hypot(dx, dz);
+    const maju = Math.min(jarak, dt * 1.6);
+    if (jarak > 1e-3) {
+      orang.position.x += (dx / jarak) * maju; orang.position.z += (dz / jarak) * maju;
+      const hadap = Math.atan2(dx, dz);
+      let beda = hadap - orang.rotation.y; beda = Math.atan2(Math.sin(beda), Math.cos(beda));
+      orang.rotation.y += beda * Math.min(1, dt * 10);
+    }
+    // ayunan langkah
+    const a = Math.sin(t * 9) * 0.5;
+    kaki[0].rotation.x = a; kaki[1].rotation.x = -a;
+    lengan[0].rotation.x = 1.25 - a * 0.6;
+    lengan[1].rotation.x = cangkir.visible ? 0.6 : 1.25 + a * 0.6;
+    orang.position.y = Math.abs(Math.sin(t * 9)) * 0.05;
+    if (jarak - maju < 1e-3) gerak.i++;
+    return gerak.i >= gerak.rute.length;
+  }
+  function duduk() {
+    gerak.mode = 'duduk'; gerak.tunggu = 6 + Math.random() * 14;
+    orang.position.copy(KURSI); orang.rotation.y = 0;
+    for (const kk of kaki) { kk.visible = false; kk.rotation.x = 0; }
+    for (const p of lengan) p.rotation.x = 0;
+    if (cangkir.visible) gerak.minum = 18; // menyeruput kopi di meja
+  }
+  function perilaku(dt, t) {
+    kepala.rotation.y *= 1 - Math.min(1, dt * 3);
+    if (gerak.mode === 'duduk') {
+      if (gerak.minum > 0) {
+        gerak.minum -= dt;
+        const seruput = Math.max(0, Math.sin(t * 0.9)) ** 6; // sesekali mengangkat cangkir
+        lengan[1].rotation.x = -0.2 - seruput * 0.9;
+        if (gerak.minum <= 0) { cangkir.visible = false; lengan[1].rotation.x = 0; }
+      }
+      gerak.tunggu -= dt;
+      if (gerak.tunggu <= 0) pilihKegiatan();
+      return;
+    }
+    if (gerak.mode === 'gaya') {
+      gerak.waktu += dt;
+      const f = Math.sin(Math.min(1, gerak.waktu / 2.4) * Math.PI); // naik lalu turun
+      if (gerak.aksi === 'meregang') { lengan[0].rotation.x = lengan[1].rotation.x = -2.6 * f; }
+      if (gerak.aksi === 'menoleh') kepala.rotation.y = Math.sin(gerak.waktu * 2.6) * 0.9 * f;
+      if (gerak.aksi === 'bersandar') { orang.rotation.x = -0.18 * f; orang.position.z = KURSI.z - 0.12 * f; }
+      if (gerak.waktu >= 2.4) { orang.rotation.x = 0; duduk(); }
+      return;
+    }
+    if (gerak.mode === 'pergi') {
+      if (langkah(dt, t)) {
+        gerak.mode = 'di-tujuan'; gerak.waktu = 0; gerak.lama = gerak.aksi === 'kopi' ? 3.6 : 4 + Math.random() * 5;
+        kaki[0].rotation.x = kaki[1].rotation.x = 0; orang.position.y = 0;
+        if (gerak.tujuan.arah !== undefined) orang.rotation.y = gerak.tujuan.arah;
+        if (gerak.aksi === 'kopi') kopi.uap = 3;
+      }
+      return;
+    }
+    if (gerak.mode === 'di-tujuan') {
+      gerak.waktu += dt;
+      if (gerak.aksi === 'kopi') {
+        lengan[1].rotation.x = 0.5; lengan[0].rotation.x = 0.2;
+        if (gerak.waktu > 2.6) cangkir.visible = true;
+      } else {
+        for (const p of lengan) p.rotation.x = 0.1;
+        kepala.rotation.y = Math.sin(gerak.waktu * 0.8) * 0.5;
+      }
+      if (gerak.waktu > gerak.lama) pulang();
+      return;
+    }
+    if (gerak.mode === 'pulang' && langkah(dt, t)) duduk();
+  }
+
+  function animasi(t, dt = 0) {
+    perilaku(dt, t);
     const s = sekarang;
     let lampu = 0, layar = 0;
     if (s === 'dikerjakan') {
       lampu = 9; layar = 3.2;
-      lengan[0].rotation.x = Math.sin(t * 14) * 0.08; lengan[1].rotation.x = Math.sin(t * 14 + 1.7) * 0.08;
+      if (gerak.mode === 'duduk') { lengan[0].rotation.x = Math.sin(t * 14) * 0.08; lengan[1].rotation.x = Math.sin(t * 14 + 1.7) * 0.08; }
     } else if (s === 'butuh-input') {
       lampu = Math.sin(t * 2.4) > 0 ? 8 : 1.5; layar = 1.5;
     } else if (s === 'gagal') {
@@ -424,6 +591,8 @@ function bangunMeja(k, x, z, indeks) {
     mTudung.emissiveIntensity = lampu > 0 ? 0.3 + lampu / 8 : 0.15;
     mLayar.emissiveIntensity = s === 'kosong' ? 0.2 : 0.4 + layar / 3;
     ikon.position.y = 2.25 + Math.sin(t * 1.6 + indeks) * 0.08;
+    ikon.visible = gerak.mode !== 'pergi' && gerak.mode !== 'pulang' && gerak.mode !== 'di-tujuan'
+      && (s === 'kosong' || s === 'butuh-input' || s === 'selesai');
   }
 
   setStatus('kosong');
@@ -564,7 +733,7 @@ async function mulai() {
     }
     langkahPutar(dt);
     animasiRuangan(dt);
-    for (const m of Object.values(keadaan.meja)) m.animasi(t);
+    for (const m of Object.values(keadaan.meja)) m.animasi(t, dt);
     kontrol.update();
     renderer.render(scene, kamera);
   });
