@@ -55,8 +55,7 @@ kontrol.minZoom = 0.7;
 kontrol.maxZoom = 2.6;
 kontrol.minPolarAngle = 0.7;
 kontrol.maxPolarAngle = 1.1;
-kontrol.minAzimuthAngle = Math.PI / 4 - 0.6;
-kontrol.maxAzimuthAngle = Math.PI / 4 + 0.6;
+// putaran horizontal bebas 360 derajat (tanpa batas azimut)
 
 // ---------------------------------------------------------------- pembantu
 const mat = (c, o = {}) => new THREE.MeshStandardMaterial({
@@ -116,9 +115,13 @@ function bangunRuangan(lebar, dalam) {
   kotak(lebar + 0.2, 1.4, dalam + 0.2, mat(WARNA.gelap, { r: 0.9 }), 0, -0.95, 0);
   kotak(lebar + 0.24, 0.06, dalam + 0.24, mat(WARNA.sodium, { e: WARNA.sodium, ei: 0.6 }), 0, -0.25, 0, scene, false);
   for (let z = -RZ + 0.35; z < RZ; z += 0.7) kotak(lebar, 0.02, 0.04, WARNA.lantaiGaris, 0, 0.01, z, scene, false);
-  // dinding
-  kotak(lebar, 5, 0.3, WARNA.dinding, 0, 2.5, -RZ - 0.15);
-  kotak(0.3, 5, dalam, WARNA.dinding2, -RX - 0.15, 2.5, 0);
+  // dinding: belakang (z = -RZ) dan kiri (x = -RX), masing-masing dengan isinya.
+  // Dinding disembunyikan saat kamera berada di baliknya, supaya ruangan tetap
+  // terlihat ketika diputar 360 derajat.
+  const dBelakang = new THREE.Group(), dKiri = new THREE.Group();
+  scene.add(dBelakang, dKiri);
+  kotak(lebar, 5, 0.3, WARNA.dinding, 0, 2.5, -RZ - 0.15, dBelakang);
+  kotak(0.3, 5, dalam, WARNA.dinding2, -RX - 0.15, 2.5, 0, dKiri);
 
   // jendela dengan kota dan hujan
   const r = acak(27);
@@ -137,16 +140,16 @@ function bangunRuangan(lebar, dalam) {
   });
   const jx = -1.2;
   const jendela = new THREE.Mesh(new THREE.PlaneGeometry(6, 2.8), new THREE.MeshBasicMaterial({ map: kota }));
-  jendela.position.set(jx, 3.0, -RZ + 0.02); scene.add(jendela);
-  kotak(6.2, 0.12, 0.2, WARNA.gelap2, jx, 1.55, -RZ + 0.1); kotak(6.2, 0.12, 0.2, WARNA.gelap2, jx, 4.45, -RZ + 0.1);
-  for (const dx of [-3.05, -1, 1, 3.05]) kotak(0.1, 2.9, 0.18, WARNA.gelap2, jx + dx, 3.0, -RZ + 0.1);
+  jendela.position.set(jx, 3.0, -RZ + 0.02); dBelakang.add(jendela);
+  kotak(6.2, 0.12, 0.2, WARNA.gelap2, jx, 1.55, -RZ + 0.1, dBelakang); kotak(6.2, 0.12, 0.2, WARNA.gelap2, jx, 4.45, -RZ + 0.1, dBelakang);
+  for (const dx of [-3.05, -1, 1, 3.05]) kotak(0.1, 2.9, 0.18, WARNA.gelap2, jx + dx, 3.0, -RZ + 0.1, dBelakang);
   // garis hujan di kaca (bergerak)
   const hujanKaca = [];
   const mHujan = new THREE.MeshBasicMaterial({ color: 0xc8d7ff, transparent: true, opacity: 0.35 });
   for (let i = 0; i < 40; i++) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(0.015, 0.25), mHujan);
     m.position.set(jx - 2.9 + r() * 5.8, 1.7 + r() * 2.6, -RZ + 0.04); m.rotation.z = 0.2;
-    scene.add(m); hujanKaca.push(m);
+    dBelakang.add(m); hujanKaca.push(m);
   }
 
   // rak buku
@@ -164,7 +167,7 @@ function bangunRuangan(lebar, dalam) {
     g.font = `800 78px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeText('KANTOR AI', w / 2, h / 2);
   });
   const nm = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.88), new THREE.MeshBasicMaterial({ map: neon }));
-  nm.rotation.y = Math.PI / 2; nm.position.set(-RX + 0.02, 3.6, rakZ + 3.6); scene.add(nm);
+  nm.rotation.y = Math.PI / 2; nm.position.set(-RX + 0.02, 3.6, rakZ + 3.6); dKiri.add(nm);
   const lampuNeon = new THREE.PointLight(WARNA.sodium, 6, 6, 1.6); lampuNeon.position.set(-RX + 1, 3.6, rakZ + 3.6); scene.add(lampuNeon);
   // tanaman
   tabung(0.3, 0.25, 0.6, WARNA.gelap, RX - 0.8, 0.3, -RZ + 0.8);
@@ -187,6 +190,8 @@ function bangunRuangan(lebar, dalam) {
   scene.add(hujan);
 
   return (dt) => {
+    dBelakang.visible = kamera.position.z > kontrol.target.z;
+    dKiri.visible = kamera.position.x > kontrol.target.x;
     const p = gHujan.attributes.position.array;
     for (let i = 1; i < p.length; i += 6) {
       p[i] -= dt * 9; p[i + 3] -= dt * 9;
