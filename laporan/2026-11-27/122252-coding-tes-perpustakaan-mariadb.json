@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T12:22:52+07:00",
+  "agen": "coding",
+  "tugas": "Buat proyek perpustakaan Laravel baru dengan model buku dan peminjaman, lalu jalankan tesnya dengan MariaDB XAMPP",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Dengan izin Syahrial memakai kredensial root washpoint, dibuat dua database baru di MariaDB 10.4.28 XAMPP: perpustakaan (aplikasi, sudah dimigrasi) dan perpustakaan_test (khusus tes). Database lain tidak disentuh. php artisan test dengan MariaDB: 6 tes lulus, 13 assertion (4 tes pinjam/kembali buku plus 2 contoh bawaan). Proyek di-commit di git lokal (b3ee622); belum ada repo GitHub, jadi belum ada PR. Laporan ini menggantikan status butuh-input di 122109-coding-proyek-perpustakaan-baru.",
+  "hasil": ["Folder lokal /Applications/XAMPP/xamppfiles/htdocs/laravel/perpustakaan, commit lokal b3ee622", "Output php artisan test (MariaDB perpustakaan_test): 6 passed, 13 assertions"]
+}
