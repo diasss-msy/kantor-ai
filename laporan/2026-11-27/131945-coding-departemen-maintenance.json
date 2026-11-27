@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-27T13:19:45+07:00",
+  "agen": "coding",
+  "tugas": "Tambah departemen Maintenance untuk merawat dan meng-upgrade kantor 3D",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "PR #5 menambah karyawan maintenance, bagian Maintenance di instruksi proyek (wilayah kantor/, bangun_data.py, workflow Pages), dan meja kelima di kantor 3D dengan empat departemen sebaris. Pytest 21 lulus, tes node 10 lulus, cek_laporan kode 0, dicek di Chromium headless desktop dan HP. Setelah merge, instruksi proyek perlu ditempel ulang oleh Syahrial.",
+  "hasil": ["https://github.com/diasss-msy/kantor-ai/pull/5", "Library: coding/kantor-3d/kantor-3d-maintenance.png, coding/kantor-3d/instruksi-proyek.md"]
+}
