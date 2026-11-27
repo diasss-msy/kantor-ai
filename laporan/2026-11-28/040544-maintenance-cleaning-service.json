@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T04:05:44+07:00",
+  "agen": "maintenance",
+  "tugas": "Tambah karyawan cleaning service yang membersihkan sampah departemen lain dan konfirmasi ke manajer sebelum membuang",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Departemen Kebersihan (id kebersihan) ditambahkan ke karyawan.json dan aturan proyek: mendata sampah digital, tidak menghapus tanpa persetujuan lewat Manajer. Di kantor 3D ada petugas bertopi kuning dengan troli, tempat sampah di setiap meja, animasi menyapu, mengangkat kantong, bertanya ke pintu ruang manajer, membuang, dan mengepel. 40 tes lulus. Menunggu merge PR #14, lalu Syahrial perlu menempel ulang instruksi-proyek.md.",
+  "hasil": ["PR #14 di repo kantor-ai", "coding/kantor-3d/kebersihan-menyapu.png", "coding/kantor-3d/kebersihan-troli.png"]
+}
