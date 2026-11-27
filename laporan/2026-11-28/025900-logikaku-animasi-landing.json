@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T02:59:00+07:00",
+  "agen": "logikaku",
+  "tugas": "Buat animasi landing page LogikaKu seperti video referensi tanpa membuang elemen yang ada",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Animasi landing dibuat di PR #9: judul muncul dari blur kata demi kata, kartu hero menyebar dari tengah, isi muncul bergiliran saat digulir, judul bagian terisi mengikuti guliran, panel Cara belajar membesar, dan kabel kaki halaman tergambar sampai LED menyala. Mati otomatis dengan Kurangi animasi. Tes Playwright terang, gelap, dan HP lulus. Juga dijelaskan penyebab deploy GitHub Pages gagal: Pages belum dinyalakan di Settings.",
+  "hasil": ["PR #9 di repo LogikaKu", "coding/logikaku/potret/landing-animasi/landing-animasi.mp4"]
+}
