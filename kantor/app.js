@@ -324,7 +324,7 @@ function bangunKota(lebar, dalam, dinding, r) {
     const i = nomor++;
     const bentuk = BENTUK[Math.floor(r() * BENTUK.length)];
     const jauh = Math.max(Math.abs(x), Math.abs(z)) > 2.5 * P;
-    const ingin = TANAH + (jauh ? 22 + r() * 30 : 6 + r() * 18);
+    const ingin = TANAH + (jauh ? 40 + r() * 40 : 14 + r() * 26); // gedung tinggi, dibatasi maksPuncak di dekat menara
     const puncak = Math.min(ingin, maksPuncak(x, z, w, d));
     let h = puncak - TANAH;
     if (h < 5) return;
@@ -488,7 +488,7 @@ function bangunKota(lebar, dalam, dinding, r) {
   // blok ritel: dua minimarket di satu sisi, gedung kecil di sisi lain, reklame di pojok
   const RITEL = new Map([[`1,0`, 0], [`0,1`, 1], [`1,1`, 2], [`-1,0`, 3], [`0,-1`, 4], [`2,-1`, 5], [`-1,2`, 6], [`-2,-2`, 7], [`2,2`, 8], [`-2,1`, 9], [`3,0`, 10], [`0,3`, 11], [`-3,-1`, 12]]);
   // blok yang seluruhnya tempat parkir
-  const PARKIR = new Set([`1,-1`, `-1,1`, `2,0`, `0,2`, `-2,0`, `3,2`, `-3,3`, `2,-3`]);
+  const PARKIR = new Set([`1,-1`, `-1,1`]); // cukup dua lahan parkir di dekat menara kantor
   for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++) {
     if (i === 0 && j === 0) continue; // blok menara kantor
     const cx = i * P, cz = j * P;
@@ -498,9 +498,7 @@ function bangunKota(lebar, dalam, dinding, r) {
       // sisi toko menghadap jalan yang paling dekat kamera bawaan (+x/+z) bila mungkin
       const sx = (v % 2 === 0) ? 1 : -1;
       for (const [i2, dz] of [[0, -14], [1, 0], [2, 14]]) minimarket(cx + sx * (B / 2 - 5), cz + dz, sx, 0, v * 3 + i2);
-      // parkir kecil di depan deretan toko, gedung di sisi lain
-      parkir(cx + sx * 4, cz, 13, B - 6);
-      for (const sz of [-1, 1]) gedung(cx - sx * 15, cz + sz * 12, 16 + r() * 3, 18 + r() * 4);
+      for (const sz of [-1, 1]) gedung(cx - sx * 12, cz + sz * 12, 18 + r() * 4, 18 + r() * 4);
       const pz = v % 3 === 0 ? -1 : 1;
       reklame(cx + sx * (B / 2 - 1.6), cz + pz * (B / 2 - 1.6), Math.atan2(sx, pz), v);
       continue;
@@ -508,13 +506,9 @@ function bangunKota(lebar, dalam, dinding, r) {
     const n = r();
     if (n < 0.15) gedung(cx, cz, 32 + r() * 8, 32 + r() * 8);
     else if (n < 0.5) {
-      // dua gedung memanjang, atau satu gedung dan satu lahan parkir
-      const sb = r() < 0.5, lahan = r() < 0.35 ? (r() < 0.5 ? -1 : 1) : 0;
-      for (const s of [-1, 1]) {
-        const gx = cx + (sb ? s * 13 : 0), gz = cz + (sb ? 0 : s * 13);
-        if (s === lahan) parkir(gx, gz, sb ? 24 : 50, sb ? 50 : 24);
-        else gedung(gx, gz, sb ? 20 : 40, sb ? 40 : 20);
-      }
+      // dua gedung memanjang
+      const sb = r() < 0.5;
+      for (const s of [-1, 1]) gedung(cx + (sb ? s * 13 : 0), cz + (sb ? 0 : s * 13), sb ? 20 : 40, sb ? 40 : 20);
     } else if (n < 0.8) {
       for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) gedung(cx + sx * 12.5, cz + sz * 12.5, 18 + r() * 4, 18 + r() * 4);
     } else { // enam gedung ramping
