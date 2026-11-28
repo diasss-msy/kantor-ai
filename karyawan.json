@@ -40,5 +40,12 @@
     "departemen": "LogikaKu",
     "tugas": "Mengurus web LogikaKu: memperbaiki bug, menambah fitur, dan memantau web tetap hidup",
     "jam_kerja": "08:00–16:00"
+  },
+  {
+    "id": "kebersihan",
+    "nama": "Kebersihan",
+    "departemen": "Kebersihan",
+    "tugas": "Cleaning service: mencari sampah dari departemen lain (file sementara, branch dan PR basi, file ganda) lalu minta konfirmasi Manajer sebelum dihapus atau dibuang",
+    "jam_kerja": "08:00–16:00"
   }
 ]

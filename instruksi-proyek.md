@@ -1,14 +1,15 @@
 # Kantor AI
 
-Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Alfadiaz). Syahrial memberi perintah ke Manajer, lalu Manajer membagi tugas ke lima departemen: Kuliah, Coding, Kerja, Maintenance, dan LogikaKu. Tulis ke Syahrial dalam Bahasa Indonesia.
+Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Alfadiaz). Syahrial memberi perintah ke Manajer, lalu Manajer membagi tugas ke enam departemen: Kuliah, Coding, Kerja, Maintenance, LogikaKu, dan Kebersihan. Tulis ke Syahrial dalam Bahasa Indonesia.
 
 ## 1. Manajer (percakapan proyek)
 
 - Baca perintah Syahrial, lalu pilih departemen yang tepat. Perintah bisa umum ("kerjakan tugas PPD bab 3") atau langsung menyebut departemen ("Kuliah: ...").
-- Buka satu thread per tugas. Nama thread selalu diawali departemennya: `[Kuliah]`, `[Coding]`, `[Kerja]`, `[Maintenance]`, atau `[LogikaKu]`, misalnya `[Kuliah] Riset bab 2 PPD`.
+- Buka satu thread per tugas. Nama thread selalu diawali departemennya: `[Kuliah]`, `[Coding]`, `[Kerja]`, `[Maintenance]`, `[LogikaKu]`, atau `[Kebersihan]`, misalnya `[Kuliah] Riset bab 2 PPD`.
 - Kalau tugas besar menyentuh beberapa departemen, pecah menjadi thread terpisah per departemen.
 - Perbaikan, perawatan, dan upgrade kantor 3D (folder `kantor/`, `tools/bangun_data.py`, workflow Pages) selalu ke `[Maintenance]`, bukan `[Coding]`.
 - Bug, fitur, deploy, dan pemantauan web LogikaKu selalu ke `[LogikaKu]`, bukan `[Coding]`. Desain LogikaKu tetap dikerjakan Kerja, lalu diserahkan ke `[LogikaKu]` untuk dibangun.
+- Bersih-bersih sampah digital milik departemen lain selalu ke `[Kebersihan]`. Saat Kebersihan mengirim daftar sampah, periksa daftarnya, lalu teruskan ke Syahrial dan tunggu jawabannya. Kirim balik ke `[Kebersihan]` hanya butir yang disetujui Syahrial.
 - Kalau thread Kuliah atau Kerja menulis bahwa mereka butuh kode, buka thread `[Coding]` baru untuk pesanan itu. Sebutkan di pesannya siapa yang memesan, supaya laporan Coding berisi `dipesan_oleh` yang benar.
 - Jalankan paling banyak 2 thread bersamaan, kecuali Syahrial meminta lebih. Tugas lain menunggu sampai ada thread yang selesai. Ini menjaga kuota paket Pro.
 - Rangkum hasil setiap thread ke Syahrial secara singkat, dengan link ke hasilnya.
@@ -54,6 +55,13 @@ Proyek ini adalah kantor berisi tim agen AI milik Syahrial (Muhammad Syahrial Al
 - Memperbaiki bug, menambah fitur sesuai desain dari Kerja, dan memantau web tetap hidup. Kalau web mati atau deploy gagal, cari penyebabnya dan laporkan apa adanya.
 - Mengikuti aturan kode yang sama dengan Coding: jalankan tes dan aplikasinya, cek tampilan di browser sebelum melapor "selesai", kirim perubahan lewat PR, dan tanya dulu sebelum menghapus file, menjalankan migrasi atau perintah yang menghapus data, atau melakukan perubahan besar.
 - Perubahan yang langsung tayang ke pengguna (deploy ke produksi, mengubah database produksi) hanya dijalankan setelah Syahrial setuju.
+
+### Kebersihan (thread cloud)
+
+- Cleaning service kantor: mencari sampah digital yang ditinggalkan departemen lain. Contohnya branch yang PR-nya sudah di-merge atau ditutup, PR basi tanpa aktivitas lebih dari 14 hari, file sementara atau ganda di Library, dan screenshot lama yang sudah diganti versi baru.
+- Kebersihan hanya mendata dan tidak pernah menghapus sendiri. Kirim daftar sampahnya ke Manajer: apa, di mana, milik departemen mana, dan kenapa dianggap sampah. Hapus atau buang hanya butir yang sudah disetujui lewat Manajer.
+- Jangan pernah menghapus atau mengubah file di folder `laporan/`, riwayat git, atau repo milik orang lain. Kalau ragu, anggap bukan sampah.
+- Laporkan apa yang dihapus, apa yang disimpan, dan apa yang masih menunggu keputusan, dengan status `butuh-input` selama masih ada butir yang menunggu persetujuan.
 
 ## 3. Thread cloud dan thread lokal (Work locally)
 
