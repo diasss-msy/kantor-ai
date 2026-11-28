@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T10:28:12+07:00",
+  "agen": "maintenance",
+  "tugas": "Ubah layout kantor 3D: ruang rapat menempel ruang manajer, pantry, departemen tukar tempat dengan lounge, perpustakaan di pojok, tembok ruang manajer, lift, meja manajer dekat jendela",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Layout baru selesai: departemen di belakang kanan, lounge di depan, ruang rapat menempel ruang manajer, pantry di bekas ruang rapat, perpustakaan di pojok kiri depan, kaca ruang manajer jadi tembok (dipotong otomatis saat menghalangi kamera), pintu luar jadi lift, meja manajer dekat jendela belakang. Jalur jalan dipindah ke lorong kanan. Tes 23 + 17 lulus. Menunggu merge PR #14.",
+  "hasil": ["PR #14 di repo kantor-ai", "Library: coding/kantor-3d/layout-baru.png", "Library: coding/kantor-3d/layout-baru-manajer-rapat.png", "Library: coding/kantor-3d/layout-baru-diputar.png"]
+}
