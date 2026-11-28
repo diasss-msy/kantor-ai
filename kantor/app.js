@@ -56,7 +56,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x0e1736, 550, 840); // gedung jauh dan bagian bawah kota memudar
+scene.fog = new THREE.Fog(0x0e1736, 230, 520); // gedung jauh dan bagian bawah kota memudar
 const kamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 1400);
 const kontrol = new OrbitControls(kamera, kanvas);
 kontrol.enablePan = false;
@@ -300,51 +300,11 @@ function bangunKota(lebar, dalam, dinding, r) {
   // ---- gedung di setiap blok, dengan bentuk berbeda-beda
   const BENTUK = ['kotak', 'bertingkat', 'silinder', 'kembar', 'runcing', 'L', 'bertingkat', 'silinder'];
   let nomor = 0;
-  const gedungKota = [];
-  /**
-   * Gedung yang berada di antara kamera dan ruangan diturunkan (tenggelam ke bawah aspal)
-   * sampai puncaknya tidak menutupi lantai kantor; gedung lain tetap setinggi penuh.
-   */
-  /** Koordinat u terbesar (paling dekat kamera) dari lantai ruangan pada garis pandang bergeser t. */
-  function tepiDekat(t, ux, uz, px, pz) {
-    let hi = Infinity;
-    for (const [a, c, R] of [[ux, t * px, RX + 0.5], [uz, t * pz, RZ + 0.5]]) {
-      if (Math.abs(a) < 1e-6) continue;
-      hi = Math.min(hi, Math.max((R - c) / a, (-R - c) / a));
-    }
-    return hi;
-  }
-  const arahLalu = new THREE.Vector3(1e9, 0, 0);
-  let pertama = true;
-  function turunkanGedung(dt) {
-    const v = kamera.position.clone().sub(kontrol.target);
-    const datar = Math.hypot(v.x, v.z), ux = v.x / datar, uz = v.z / datar, tanE = v.y / datar;
-    const berubah = arahLalu.distanceToSquared(v.set(ux, tanE, uz)) > 1e-8; arahLalu.copy(v);
-    const px = -uz, pz = ux, ru = Math.abs(ux) * RX + Math.abs(uz) * RZ, rp = Math.abs(px) * RX + Math.abs(pz) * RZ;
-    const lantai = -TANAH, a = pertama ? 1 : Math.min(1, dt * 7); pertama = false;
-    for (const b of gedungKota) {
-      if (berubah || b.g.userData.gerak) {
-        let batas = b.h;
-        const bp = b.x * px + b.z * pz, ep = Math.abs(px) * b.w / 2 + Math.abs(pz) * b.d / 2;
-        const bu = b.x * ux + b.z * uz;
-        const t0 = Math.max(-rp, bp - ep - 1.5), t1 = Math.min(rp, bp + ep + 1.5);
-        if (t0 < t1 && bu > 0) { // segaris dengan ruangan dilihat dari kamera, dan di sisi kamera
-          // tepi ruangan terdekat ke kamera pada rentang yang tertutup gedung ini
-          let tepi = -Infinity;
-          for (let k = 0; k <= 8; k++) tepi = Math.max(tepi, tepiDekat(t0 + (t1 - t0) * k / 8, ux, uz, px, pz));
-          const s = Math.max(0, bu - (Math.abs(ux) * b.w / 2 + Math.abs(uz) * b.d / 2) - tepi);
-          batas = Math.max(3, lantai + tanE * s - 2);
-        }
-        // gedung di sisi kamera dibuat rendah dan meninggi pelan-pelan, supaya jalan di antaranya terlihat
-        const eu = Math.abs(ux) * b.w / 2 + Math.abs(uz) * b.d / 2;
-        if (bu - eu > ru - 30 && Math.abs(bp) < rp + ep + 75) batas = Math.min(batas, 6 + 0.28 * Math.max(0, bu - eu - ru));
-        b.target = Math.min(0, batas - b.h);
-      }
-      const y = b.g.position.y, t = b.target ?? 0;
-      b.g.position.y = Math.abs(t - y) < 0.05 ? t : y + (t - y) * a;
-      b.g.userData.gerak = b.g.position.y !== t;
-    }
-  }
+  /** Tinggi puncak maksimum supaya tidak menutupi ruangan dari sudut kamera mana pun. */
+  const maksPuncak = (x, z, w, d) => {
+    const dx = Math.max(0, Math.abs(x) - w / 2), dz = Math.max(0, Math.abs(z) - d / 2);
+    return 0.5 * (Math.hypot(dx, dz) - Math.hypot(lebar, dalam) / 2) - 1;
+  };
   const kotakGedung = (w, h, d, x, y0, z, i) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [
       matFasad(i, d, h), matFasad(i, d, h), mAtap, mAtap, matFasad(i + 1, w, h), matFasad(i + 1, w, h),
@@ -363,11 +323,11 @@ function bangunKota(lebar, dalam, dinding, r) {
   function gedung(x, z, w, d) {
     const i = nomor++;
     const bentuk = BENTUK[Math.floor(r() * BENTUK.length)];
-    const jauh = Math.max(Math.abs(x), Math.abs(z)) > 1.5 * P;
-    // tinggi penuh; gedung yang menghalangi ruangan dari arah kamera diturunkan tiap frame (lihat turunkanGedung)
-    const puncak = TANAH + (jauh ? 55 + r() * 60 : 38 + r() * 40);
+    const jauh = Math.max(Math.abs(x), Math.abs(z)) > 2.5 * P;
+    const ingin = TANAH + (jauh ? 40 + r() * 40 : 14 + r() * 26); // gedung tinggi, dibatasi maksPuncak di dekat menara
+    const puncak = Math.min(ingin, maksPuncak(x, z, w, d));
     let h = puncak - TANAH;
-    const awal = scene.children.length;
+    if (h < 5) return;
     if (bentuk === 'kotak') {
       kotakGedung(w, h, d, x, TANAH, z, i); atap(w, d, x, puncak, z, i);
     } else if (bentuk === 'bertingkat') {
@@ -413,10 +373,6 @@ function bangunKota(lebar, dalam, dinding, r) {
       const pp = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.2), new THREE.MeshBasicMaterial({ map: tx, side: THREE.DoubleSide }));
       pp.position.set(x, puncak + 1.4, z); pp.lookAt(0, puncak + 1.4, 0); scene.add(pp);
     }
-    // kumpulkan semua bagian gedung ini dalam satu grup, supaya bisa diturunkan utuh ke bawah aspal
-    const g = new THREE.Group(); scene.add(g);
-    for (const o of scene.children.splice(awal, scene.children.length - awal - 1)) { o.parent = null; g.add(o); }
-    gedungKota.push({ g, x, z, w, d, h });
   }
   // ---- minimarket dan papan reklame
   const TOKO = [
@@ -584,7 +540,6 @@ function bangunKota(lebar, dalam, dinding, r) {
 
   let waktuLalin = 0;
   return (dt) => {
-    turunkanGedung(dt);
     waktuLalin += dt; aturFase(waktuLalin);
     for (const g of mobil) {
       const u = g.userData;
@@ -1914,7 +1869,7 @@ async function mulai() {
     if (k.id === PETUGAS) keadaan.meja[k.id] = bangunPetugas(k, posisi[k.id], i);
   });
 
-  kamera.position.set(264, 228, 264); // sangat jauh, supaya gedung tinggi di sekitar tidak terpotong bidang dekat kamera
+  kamera.position.set(66, 57, 66); // jauh, supaya gedung di sekitar tidak terpotong bidang dekat kamera
   kontrol.target.set(0, 0.6, 0.4);
   kontrol.update();
   ukurUlang();
