@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T12:12:55+07:00",
+  "agen": "maintenance",
+  "tugas": "Perbaiki jalan kota di kantor 3D yang tidak terlihat karena tertutup gedung tinggi",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Jalan tertutup oleh gedung tinggi di sisi kamera. Gedung di sisi kamera kini dibuat rendah dan meninggi pelan-pelan makin jauh dari kantor, dan ikut berubah saat kamera diputar. Jalan, zebra cross, mobil, dan tempat parkir di depan kantor kembali terlihat, sedangkan gedung di belakang dan samping tetap tinggi. Tes 23 + 17 lulus.",
+  "hasil": ["PR #14 di repo kantor-ai", "Library: coding/kantor-3d/jalan-terlihat-dekat.png", "Library: coding/kantor-3d/jalan-terlihat-jauh.png"]
+}
