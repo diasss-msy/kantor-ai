@@ -179,7 +179,7 @@ function bangunKota(lebar, dalam, dinding, r) {
   bola(0.18, mMerah, 0, 6.1, 0, antena); lampuAtap.push(mMerah);
 
   // ---- jalan: blok 19 x 19 dengan jalan selebar 8 di antaranya
-  const P = 62, N = 3, BATAS = (N + 0.5) * P, B = P - 8; // blok B x B, jalan selebar 8
+  const P = 62, N = 4, BATAS = (N + 0.5) * P, B = P - 8; // blok B x B, jalan selebar 8
   kotak(1000, 1, 1000, mat(0x161d38, { r: 1 }), 0, TANAH - 0.5, 0); // aspal
   const mTrotoar = mat(0x232c4f, { r: 0.95 });
   const mMarka = mat(0xe8dcc0, { e: 0xe8dcc0, ei: 0.25 });
@@ -442,30 +442,103 @@ function bangunKota(lebar, dalam, dinding, r) {
     kotak(4.4, 0.08, 0.6, mTiang, 0, -1.25, 0.3, g, false); // jalan servis
     for (const s of [-1.4, 0, 1.4]) bola(0.1, mLampuJalan, s, 1.3, 0.35, g); // lampu sorot
   }
+  // ---- tempat parkir: aspal, garis petak, mobil terparkir, pos jaga dengan palang, rambu P, lampu
+  const garisParkir = [], mobilParkir = [];
+  const mAspalParkir = mat(0x1c2340, { r: 1 });
+  const tandaP = teksturKanvas(128, 128, (c, w, h) => {
+    c.fillStyle = '#2f6fd6'; c.fillRect(0, 0, w, h);
+    c.strokeStyle = '#ffffff'; c.lineWidth = 8; c.strokeRect(8, 8, w - 16, h - 16);
+    c.fillStyle = '#ffffff'; c.font = `800 92px ${FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('P', w / 2, h / 2 + 4);
+  });
+  const mTandaP = new THREE.MeshStandardMaterial({ map: tandaP, emissive: 0xffffff, emissiveMap: tandaP, emissiveIntensity: 0.6, side: THREE.DoubleSide });
+  /** Lahan parkir w x d berpusat di (x, z); baris petak sejajar sumbu x. */
+  function parkir(x, z, w, d) {
+    const y = TANAH + 0.25;
+    kotak(w, 0.05, d, mAspalParkir, x, y + 0.02, z, scene, false).receiveShadow = true;
+    const x0 = x - w / 2 + 2.2, x1 = x + w / 2 - 2.2;
+    let zr = z - d / 2 + 3.2, baris = 0;
+    while (zr + 2.5 < z + d / 2 - 1) {
+      const hadap = baris % 2 === 0 ? 1 : -1; // baris berpasangan saling membelakangi
+      for (let xs = x0; xs <= x1 + 0.01; xs += 2.6) {
+        garisParkir.push([xs, zr, 0.12, 4.8]);
+        if (xs + 2.6 <= x1 + 0.01 && r() < 0.68) mobilParkir.push([xs + 1.3, zr - hadap * 0.2, hadap > 0 ? 0 : Math.PI, warnaMobil[Math.floor(r() * warnaMobil.length)]]);
+      }
+      garisParkir.push([(x0 + x1) / 2, zr - hadap * 2.4, x1 - x0, 0.12]); // garis ujung petak
+      zr += baris % 2 === 0 ? 5 : 6.6; baris++;
+    }
+    // pos jaga dan palang di pintu masuk
+    const px = x + w / 2 - 2, pz = z + d / 2 - 1.6;
+    kotak(1.6, 2.2, 1.4, 0xe8dcc0, px, y + 1.1, pz);
+    kotak(1.8, 0.15, 1.6, 0x2f6fd6, px, y + 2.28, pz);
+    kotak(1.0, 0.7, 0.05, mat(0xfff2d0, { e: 0xfff2d0, ei: 0.8 }), px - 0.2, y + 1.5, pz + 0.72, scene, false);
+    kotak(0.25, 1.0, 0.25, 0x2a3242, px - 1.4, y + 0.5, pz + 0.2);
+    for (let i = 0; i < 6; i++) kotak(0.55, 0.12, 0.12, i % 2 ? 0xffffff : 0xff3b4a, px - 1.7 - i * 0.55, y + 1.0, pz + 0.2, scene, false); // palang
+    // rambu P dan lampu penerang
+    tabung(0.06, 0.06, 3.2, mTiang, x - w / 2 + 1.2, y + 1.6, z + d / 2 - 1.2);
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1), mTandaP); pl.position.set(x - w / 2 + 1.2, y + 3.4, z + d / 2 - 1.15); scene.add(pl);
+    for (const [sx, sz] of [[-0.3, -0.3], [0.3, 0.3], [-0.3, 0.3], [0.3, -0.3]]) {
+      const lx = x + sx * w, lz = z + sz * d;
+      tabung(0.07, 0.09, 5, mTiang, lx, y + 2.5, lz);
+      bola(0.22, mLampuJalan, lx, y + 5.1, lz);
+      const sn = new THREE.Mesh(new THREE.CircleGeometry(3.2, 20), mSinar);
+      sn.rotation.x = -Math.PI / 2; sn.position.set(lx, y + 0.08, lz); scene.add(sn);
+    }
+  }
+
   // blok ritel: dua minimarket di satu sisi, gedung kecil di sisi lain, reklame di pojok
-  const RITEL = new Map([[`1,0`, 0], [`0,1`, 1], [`1,1`, 2], [`-1,0`, 3], [`0,-1`, 4], [`2,-1`, 5], [`-1,2`, 6], [`-2,-2`, 7], [`2,2`, 8], [`-2,1`, 9]]);
+  const RITEL = new Map([[`1,0`, 0], [`0,1`, 1], [`1,1`, 2], [`-1,0`, 3], [`0,-1`, 4], [`2,-1`, 5], [`-1,2`, 6], [`-2,-2`, 7], [`2,2`, 8], [`-2,1`, 9], [`3,0`, 10], [`0,3`, 11], [`-3,-1`, 12]]);
+  // blok yang seluruhnya tempat parkir
+  const PARKIR = new Set([`1,-1`, `-1,1`, `2,0`, `0,2`, `-2,0`, `3,2`, `-3,3`, `2,-3`]);
   for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++) {
     if (i === 0 && j === 0) continue; // blok menara kantor
     const cx = i * P, cz = j * P;
+    if (PARKIR.has(`${i},${j}`)) { parkir(cx, cz, B - 3, B - 3); continue; }
     if (RITEL.has(`${i},${j}`)) {
       const v = RITEL.get(`${i},${j}`);
       // sisi toko menghadap jalan yang paling dekat kamera bawaan (+x/+z) bila mungkin
       const sx = (v % 2 === 0) ? 1 : -1;
       for (const [i2, dz] of [[0, -14], [1, 0], [2, 14]]) minimarket(cx + sx * (B / 2 - 5), cz + dz, sx, 0, v * 3 + i2);
-      for (const sz of [-1, 1]) gedung(cx - sx * 12, cz + sz * 12, 18 + r() * 4, 18 + r() * 4);
+      // parkir kecil di depan deretan toko, gedung di sisi lain
+      parkir(cx + sx * 4, cz, 13, B - 6);
+      for (const sz of [-1, 1]) gedung(cx - sx * 15, cz + sz * 12, 16 + r() * 3, 18 + r() * 4);
       const pz = v % 3 === 0 ? -1 : 1;
       reklame(cx + sx * (B / 2 - 1.6), cz + pz * (B / 2 - 1.6), Math.atan2(sx, pz), v);
       continue;
     }
     const n = r();
-    if (n < 0.35) gedung(cx, cz, 30 + r() * 10, 30 + r() * 10);
-    else if (n < 0.7) {
-      const sb = r() < 0.5;
-      for (const s of [-1, 1]) gedung(cx + (sb ? s * 13 : 0), cz + (sb ? 0 : s * 13), sb ? 20 : 40, sb ? 40 : 20);
-    } else for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-      if (r() < 0.8) gedung(cx + sx * 12.5, cz + sz * 12.5, 18 + r() * 4, 18 + r() * 4);
+    if (n < 0.15) gedung(cx, cz, 32 + r() * 8, 32 + r() * 8);
+    else if (n < 0.5) {
+      // dua gedung memanjang, atau satu gedung dan satu lahan parkir
+      const sb = r() < 0.5, lahan = r() < 0.35 ? (r() < 0.5 ? -1 : 1) : 0;
+      for (const s of [-1, 1]) {
+        const gx = cx + (sb ? s * 13 : 0), gz = cz + (sb ? 0 : s * 13);
+        if (s === lahan) parkir(gx, gz, sb ? 24 : 50, sb ? 50 : 24);
+        else gedung(gx, gz, sb ? 20 : 40, sb ? 40 : 20);
+      }
+    } else if (n < 0.8) {
+      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) gedung(cx + sx * 12.5, cz + sz * 12.5, 18 + r() * 4, 18 + r() * 4);
+    } else { // enam gedung ramping
+      for (const sx of [-1, 0, 1]) for (const sz of [-1, 1]) gedung(cx + sx * 17, cz + sz * 12.5, 13 + r() * 2, 18 + r() * 4);
     }
   }
+  // garis petak dan mobil terparkir digambar sebagai instance supaya ringan
+  const kerangka = new THREE.Object3D();
+  const iGaris = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mMarka, garisParkir.length);
+  garisParkir.forEach(([gx, gz, w, d], k) => {
+    kerangka.position.set(gx, TANAH + 0.3, gz); kerangka.rotation.set(0, 0, 0); kerangka.scale.set(w, 0.02, d);
+    kerangka.updateMatrix(); iGaris.setMatrixAt(k, kerangka.matrix);
+  });
+  scene.add(iGaris);
+  const iBadan = new THREE.InstancedMesh(new THREE.BoxGeometry(1.0, 0.45, 2.1), mat(0xffffff, { r: 0.5 }), mobilParkir.length);
+  const iKabin = new THREE.InstancedMesh(new THREE.BoxGeometry(0.85, 0.35, 1.1), mat(0x16204a, { r: 0.3 }), mobilParkir.length);
+  const warna = new THREE.Color();
+  mobilParkir.forEach(([mx, mz, rot, w], k) => {
+    kerangka.rotation.set(0, rot, 0); kerangka.scale.set(1, 1, 1);
+    kerangka.position.set(mx, TANAH + 0.27 + 0.42, mz); kerangka.updateMatrix(); iBadan.setMatrixAt(k, kerangka.matrix);
+    iBadan.setColorAt(k, warna.set(w));
+    kerangka.position.set(mx - Math.sin(rot) * 0.1, TANAH + 0.27 + 0.8, mz - Math.cos(rot) * 0.1); kerangka.updateMatrix(); iKabin.setMatrixAt(k, kerangka.matrix);
+  });
+  iBadan.castShadow = true; scene.add(iBadan, iKabin);
 
   let waktuLalin = 0;
   return (dt) => {
@@ -673,7 +746,7 @@ function bangunRuangan(lebar, dalam) {
   const lampuTV = new THREE.PointLight(0x5ad1ff, 3, 7, 1.6); lampuTV.position.set(lx0, 2, lz0 - 2.2); scene.add(lampuTV);
   for (const [dx, w] of [[-3.6, 0x5b3f7a], [3.6, 0xd9532b]]) { const bb = bola(0.6, w, lx0 + dx, 0.45, lz0 - 0.6); bb.scale.set(1, 0.7, 1); }
   // tanaman besar mengisi sudut-sudut kosong
-  for (const [tx, tz, s] of [[RX - 0.6, -1.5, 1], [RX - 0.6, 16.5, 1.2], [-1, RZ - 0.7, 1], [-RX + 0.6, 11, 1.1], [1.5, -RZ + 1.2, 0.9], [RX - 9, -RZ + 1.2, 1]]) {
+  for (const [tx, tz, s] of [[RX - 0.6, -1.5, 1], [RX - 0.6, 18.2, 1.0], [-1, RZ - 0.7, 1], [-RX + 0.6, 11, 1.1], [1.5, -RZ + 1.2, 0.9], [RX - 9, -RZ + 1.2, 1]]) {
     tabung(0.35 * s, 0.28 * s, 0.6 * s, 0xd9532b, tx, 0.3 * s, tz);
     bola(0.55 * s, 0x4f8a6b, tx, 1.05 * s, tz); bola(0.38 * s, 0x3f7a5e, tx + 0.2, 1.5 * s, tz - 0.1);
   }
@@ -686,8 +759,8 @@ function bangunRuangan(lebar, dalam) {
 
   bangunFasilitas(RX, RZ);
 
-  // ---- dispenser air di dinding kanan, dekat ruang santai
-  const dx0 = RX - 0.55, dz0 = 12;
+  // ---- dispenser air di samping pantry
+  const dx0 = -7.3, dz0 = 21.5;
   kotak(0.5, 1.0, 0.5, WARNA.krem, dx0, 0.5, dz0);
   tabung(0.2, 0.2, 0.5, mat(0x7fd6ff, { t: true, op: 0.6, r: 0.2 }), dx0, 1.25, dz0);
   kotak(0.08, 0.06, 0.08, 0xff5d6c, dx0 - 0.26, 0.75, dz0 - 0.1); kotak(0.08, 0.06, 0.08, 0x5ad1ff, dx0 - 0.26, 0.75, dz0 + 0.1);
@@ -727,7 +800,10 @@ function bangunRuangan(lebar, dalam) {
     { x: 2.2, z: RZ - 0.8, arah: 0 }, // jendela depan
     { x: 1.0, z: -13.3, arah: -Math.PI / 2 }, // menengok ke pintu ruang manajer
     { x: 15.5, z: 8.4, arah: Math.PI }, // menonton TV di ruang santai
-    { x: RX - 1.3, z: 12, arah: Math.PI / 2 }, // dispenser
+    { x: -7.0, z: 20.7, arah: 0 }, // dispenser di samping pantry
+    { x: RX - 2.6, z: 7.8, arah: Math.PI / 2 }, // ke toilet pria
+    { x: RX - 2.6, z: 13, arah: Math.PI / 2 }, // ke toilet wanita
+    { x: 12.4, z: -1.8, arah: Math.PI }, // mengambil berkas di ruang arsip
     { x: LORONG_X, z: 1.6, arah: Math.PI / 2 }, // papan tulis dari jauh
     { x: -13, z: 14.8, arah: 0 }, // ngemil di meja bar pantry
     { x: -23.4, z: 23.2, arah: -Math.PI / 2 }, // memilih buku di perpustakaan
@@ -845,23 +921,37 @@ function rakBuku(cx, cz, panjang, sepanjangZ, muka, tingkatan = 4, warnaRak = 0x
 }
 
 /**
- * Ruangan bertembok: setiap bentang [ax, az, bx, bz] (sejajar sumbu) dibangun dua
- * versi, penuh dan pendek. Versi pendek tampil saat potong() bernilai true, yaitu
- * saat kamera ada di sisi luar tembok, sama seperti dinding luar gedung.
+ * Pasangan grup {penuh, pendek} yang ikut dipotong seperti tembok di bidang
+ * sumbu = nilai: versi pendek tampil saat kamera ada di sisi luar (arah tanda).
  */
-function ruangBertembok(bentang, potong, T = 3.2, TP = 0.9, warna = 0x2b3360) {
-  const mTembok = mat(warna, { r: 0.9 }), mList = mat(0xffcf7a, { r: 0.5 });
+function grupPotong(sumbu, nilai, tanda) {
   const penuh = new THREE.Group(), pendek = new THREE.Group(); scene.add(penuh, pendek);
-  for (const [ax, az, bx, bz] of bentang) {
+  dindingDalam.push(() => {
+    const c = sumbu === 'x' ? kamera.position.x : kamera.position.z;
+    const p = (c - nilai) * tanda > 0; penuh.visible = !p; pendek.visible = p;
+  });
+  return { penuh, pendek };
+}
+
+/**
+ * Ruangan bertembok: setiap bentang [ax, az, bx, bz, tanda?] (sejajar sumbu)
+ * dibangun dua versi, penuh dan pendek. Setiap tembok dipotong pendek sendiri-sendiri
+ * saat kamera ada di sisi luarnya (sisi yang menjauhi pusat ruangan, atau arah tanda),
+ * sama seperti dinding luar gedung, jadi isi ruangan selalu terlihat.
+ */
+function ruangBertembok(bentang, pusat, T = 3.2, TP = 0.9, warna = 0x2b3360) {
+  const mTembok = mat(warna, { r: 0.9 }), mList = mat(0xffcf7a, { r: 0.5 });
+  for (const [ax, az, bx, bz, tanda] of bentang) {
     const panjang = Math.hypot(bx - ax, bz - az), cx = (ax + bx) / 2, cz = (az + bz) / 2, sepanjangX = az === bz;
+    const sumbu = sepanjangX ? 'z' : 'x', nilai = sepanjangX ? az : ax;
+    const g = grupPotong(sumbu, nilai, tanda ?? Math.sign(nilai - (sepanjangX ? pusat.z : pusat.x)));
     const w = sepanjangX ? panjang : 0.2, d = sepanjangX ? 0.2 : panjang;
-    for (const [grup, h] of [[penuh, T], [pendek, TP]]) {
+    for (const [grup, h] of [[g.penuh, T], [g.pendek, TP]]) {
       kotak(w, h, d, mTembok, cx, h / 2, cz, grup);
       kotak(w + (sepanjangX ? 0 : 0.04), 0.08, d + (sepanjangX ? 0.04 : 0), mList, cx, h + 0.04, cz, grup, false);
     }
   }
-  dindingDalam.push(() => { const p = potong(); penuh.visible = !p; pendek.visible = p; });
-  return { penuh, pendek, mTembok, T, TP };
+  return { mTembok, T, TP };
 }
 
 /** Lukisan abstrak berbingkai, menghadap arah rotY. */
@@ -1006,7 +1096,8 @@ function bangunFasilitas(RX, RZ) {
   kotak(k0.x1 - k0.x0 - 0.1, 0.03, k0.z1 - k0.z0 - 0.1, mat(0x2f4a52, { r: 0.6 }), (k0.x0 + k0.x1) / 2, 0.02, (k0.z0 + k0.z1) / 2, scene, false).receiveShadow = true;
   const rk = ruangBertembok([
     [k0.x0, k0.z0, k0.x0, kp - 0.7], [k0.x0, kp + 0.7, k0.x0, k0.z1], [k0.x0, k0.z0, k0.x1, k0.z0],
-  ], () => kamera.position.x < k0.x0 || kamera.position.z < k0.z0, 3.2, 0.9, 0x2f5e5a);
+  ], { x: (k0.x0 + k0.x1) / 2, z: (k0.z0 + k0.z1) / 2 }, 3.2, 0.9, 0x2f5e5a);
+  Object.assign(rk, grupPotong('x', k0.x0, -1)); // pintu ikut tembok kiri ruangan
   kotak(0.24, 0.7, 1.5, rk.mTembok, k0.x0, 2.85, kp, rk.penuh); // ambang atas pintu
   const daunK = new THREE.Group(); daunK.position.set(k0.x0, 0, kp - 0.7); daunK.rotation.y = -(Math.PI - 0.15); rk.penuh.add(daunK);
   kotak(0.06, 2.4, 1.36, 0x8a5a3c, 0, 1.2, 0.68, daunK); // daun pintu terbuka ke luar, terlipat rapat ke tembok
@@ -1029,6 +1120,98 @@ function bangunFasilitas(RX, RZ) {
   for (const dz of [-0.35, 0.05, 0.4]) kotak(0.1, 0.8, 0.45, 0x3fa69a, k0.x1 - 0.2, 1.55, k0.z0 + 3.1 + dz);
   for (const dz of [0.0, 0.25]) { const sp = tabung(0.02, 0.02, 1.6, 0x8a5a3c, k0.x0 + 0.35, 0.8, k0.z0 + 0.4 + dz); sp.rotation.z = 0.12; }
   const lampuK = new THREE.PointLight(0xbff0ff, 1.6, 6, 1.6); lampuK.position.set((k0.x0 + k0.x1) / 2, 2.6, (k0.z0 + k0.z1) / 2); scene.add(lampuK);
+
+  // ---- toilet pria dan wanita di dinding kanan, di antara ruang lift dan ruang kebersihan
+  const t0 = { x0: RX - 3.2, x1: RX, z0: 6.5, z1: 17 }, tm = (t0.z0 + t0.z1) / 2;
+  const pintuT = [{ z: 7.8, nama: 'TOILET PRIA', warna: '#5ad1ff' }, { z: 13, nama: 'TOILET WANITA', warna: '#ff8fb0' }];
+  kotak(t0.x1 - t0.x0 - 0.1, 0.03, t0.z1 - t0.z0 - 0.1, mat(0xc8d2e6, { r: 0.4 }), (t0.x0 + t0.x1) / 2, 0.02, tm, scene, false).receiveShadow = true;
+  for (let x = t0.x0 + 0.5; x < t0.x1; x += 0.8) kotak(0.02, 0.006, t0.z1 - t0.z0 - 0.2, 0x9aa6c0, x, 0.04, tm, scene, false); // nat ubin
+  for (let z = t0.z0 + 0.5; z < t0.z1; z += 0.8) kotak(t0.x1 - t0.x0 - 0.2, 0.006, 0.02, 0x9aa6c0, (t0.x0 + t0.x1) / 2, 0.04, z, scene, false);
+  ruangBertembok([
+    [t0.x0, t0.z0, t0.x1, t0.z0], [t0.x0, t0.z1, t0.x1, t0.z1], [t0.x0, tm, t0.x1, tm, 1],
+    [t0.x0, t0.z0, t0.x0, pintuT[0].z - 0.6], [t0.x0, pintuT[0].z + 0.6, t0.x0, pintuT[1].z - 0.6], [t0.x0, pintuT[1].z + 0.6, t0.x0, t0.z1],
+  ], { x: (t0.x0 + t0.x1) / 2, z: tm }, 3.2, 0.9, 0x3a5f8a);
+  const gt = grupPotong('x', t0.x0, -1);
+  for (const pt of pintuT) for (const [grup, y] of [[gt.penuh, 2.85], [gt.pendek, 1.45]]) {
+    const pl = papanNama(pt.nama, 1.7, t0.x0 - 0.13, y, pt.z, -Math.PI / 2, pt.warna); scene.remove(pl); grup.add(pl);
+  }
+  const mPorselen = mat(0xf2f5fb, { r: 0.25 }), mKrom = mat(0xd8dde8, { r: 0.2, m: 0.9 });
+  const mCermin = mat(0xbfe6ff, { e: 0x7fb7ff, ei: 0.35, r: 0.05, m: 0.6 });
+  /** Kloset duduk menghadap -x dengan tangki di dinding kanan. */
+  function kloset(x, z) {
+    kotak(0.3, 0.5, 0.6, mPorselen, x + 0.3, 0.75, z); // tangki
+    tabung(0.2, 0.16, 0.4, mPorselen, x - 0.1, 0.2, z);
+    tabung(0.24, 0.24, 0.06, mPorselen, x - 0.12, 0.42, z);
+  }
+  /** Bilik toilet: sekat di sisi -z dan +z, pintu terbuka sedikit di sisi -x. */
+  function bilik(za, zb) {
+    const mSekat = mat(0x5a7fb0, { r: 0.6 });
+    for (const zz of [za, zb]) kotak(1.6, 2.0, 0.05, mSekat, t0.x1 - 0.85, 1.15, zz);
+    const daun = new THREE.Group(); daun.position.set(t0.x1 - 1.65, 0, za); daun.rotation.y = -0.5; scene.add(daun);
+    kotak(0.05, 1.9, zb - za - 0.05, mSekat, 0, 1.1, (zb - za) / 2, daun);
+    kloset(t0.x1 - 0.55, (za + zb) / 2);
+    tabung(0.07, 0.07, 0.12, 0xe8eef8, t0.x1 - 0.1, 1.0, (za + zb) / 2 - 0.45).rotation.z = Math.PI / 2; // tisu
+  }
+  /** Meja wastafel menempel tembok sejajar sumbu x di z = zw (tanda: arah muka). */
+  function wastafel(zw, tanda, n) {
+    const zc = zw + tanda * 0.35;
+    kotak(2.2, 0.12, 0.6, mat(0x2a3242, { r: 0.4 }), t0.x0 + 1.7, 0.92, zc);
+    kotak(2.2, 0.8, 0.5, mat(0x3a4566, { r: 0.7 }), t0.x0 + 1.7, 0.45, zc - tanda * 0.05);
+    for (let i = 0; i < n; i++) {
+      const sx = t0.x0 + 1.15 + i * 1.1;
+      tabung(0.2, 0.15, 0.12, mPorselen, sx, 0.99, zc);
+      tabung(0.025, 0.025, 0.25, mKrom, sx, 1.1, zw + tanda * 0.12);
+      kotak(0.8, 1.0, 0.03, mCermin, sx, 1.85, zw + tanda * 0.12, scene, false); // cermin
+    }
+    kotak(0.25, 0.35, 0.15, mKrom, t0.x0 + 3.0, 1.5, zw + tanda * 0.14); // pengering tangan
+  }
+  // pria: wastafel di dinding belakang, dua urinoir di dinding kanan, satu bilik
+  wastafel(t0.z0 + 0.1, 1, 2);
+  for (const uz of [8.7, 9.6]) {
+    kotak(0.3, 0.7, 0.45, mPorselen, t0.x1 - 0.25, 0.9, uz);
+    kotak(0.03, 0.7, 0.05, mat(0x5a7fb0), t0.x1 - 0.35, 1.1, uz + 0.42); // sekat urinoir
+  }
+  bilik(10.15, tm - 0.1);
+  // wanita: wastafel di dinding pemisah, dua bilik di ujung depan
+  wastafel(tm + 0.1, 1, 2);
+  bilik(14.0, 15.5);
+  bilik(15.5, t0.z1 - 0.1);
+  for (const pt of pintuT) { const lt = new THREE.PointLight(0xe8f4ff, 1.4, 5, 1.6); lt.position.set(t0.x0 + 1.6, 2.6, pt.z + 1.2); scene.add(lt); }
+  tanamanBesar(t0.x0 + 0.45, t0.z1 - 0.5, 0.6);
+
+  // ---- ruang arsip di antara area departemen dan ruang santai
+  const a0 = { x0: 2, x1: 16, z0: -5.8, z1: -0.8 }, ap = -1.8; // ap = tengah pintu di tembok kanan
+  kotak(a0.x1 - a0.x0 - 0.1, 0.03, a0.z1 - a0.z0 - 0.1, mat(0x2a2f48, { r: 0.8 }), (a0.x0 + a0.x1) / 2, 0.02, (a0.z0 + a0.z1) / 2, scene, false).receiveShadow = true;
+  ruangBertembok([
+    [a0.x0, a0.z0, a0.x1, a0.z0], [a0.x0, a0.z1, a0.x1 + 0.1, a0.z1], [a0.x0, a0.z0, a0.x0, a0.z1],
+    [a0.x1, a0.z0, a0.x1, ap - 0.6], [a0.x1, ap + 0.6, a0.x1, a0.z1],
+  ], { x: (a0.x0 + a0.x1) / 2, z: (a0.z0 + a0.z1) / 2 }, 3.2, 0.9, 0x4a3f66);
+  const ga = grupPotong('x', a0.x1, 1);
+  for (const [grup, y] of [[ga.penuh, 2.85], [ga.pendek, 1.45]]) {
+    const pl = papanNama('ARSIP', 1.4, a0.x1 + 0.13, y, ap, Math.PI / 2, '#c9b9e8'); scene.remove(pl); grup.add(pl);
+  }
+  // rak arsip bergerak (roll o pack) berjajar, berisi map dan kotak arsip
+  const warnaMap = [0xd9532b, 0x3a4f8a, 0xffcf7a, 0x3f9a5e, 0xc9b9e8, 0xe8dcc0];
+  for (let i = 0; i < 6; i++) {
+    const rx = a0.x0 + 0.9 + i * 1.6;
+    kotak(0.7, 2.4, 3.2, mat(0x6a7699, { r: 0.5, m: 0.5 }), rx, 1.2, a0.z0 + 1.85);
+    kotak(0.74, 0.12, 3.24, 0x2a3242, rx, 0.06, a0.z0 + 1.85, scene, false); // rel
+    tabung(0.12, 0.12, 0.05, 0x2a3242, rx + 0.38, 1.3, a0.z1 - 1.6).rotation.z = Math.PI / 2; // roda putar
+    for (let t = 0; t < 4; t++) for (let k = 0; k < 6; k++) {
+      kotak(0.08, 0.38, 0.42, warnaMap[(i + t + k) % warnaMap.length], rx + 0.36, 0.35 + t * 0.55, a0.z0 + 0.6 + k * 0.5, scene, false);
+    }
+  }
+  // lemari arsip besi berlaci dan meja pemindai
+  for (let i = 0; i < 3; i++) {
+    const lx = a0.x1 - 3.8 + i * 0.9;
+    kotak(0.8, 1.4, 0.7, mat(0x8a96c0, { r: 0.4, m: 0.6 }), lx, 0.7, a0.z0 + 0.45);
+    for (const dy of [0.3, 0.65, 1.0, 1.3]) kotak(0.6, 0.04, 0.02, 0x2a3242, lx, dy, a0.z0 + 0.81, scene, false);
+  }
+  kotak(1.6, 0.08, 0.8, WARNA.meja, a0.x1 - 1.3, 0.85, a0.z0 + 1.4);
+  for (const dx of [-0.7, 0.7]) kotak(0.06, 0.8, 0.7, WARNA.gelap, a0.x1 - 1.3 + dx, 0.42, a0.z0 + 1.4);
+  kotak(0.6, 0.15, 0.4, 0x2a3242, a0.x1 - 1.5, 0.97, a0.z0 + 1.4); // pemindai
+  for (let i = 0; i < 4; i++) kotak(0.5, 0.3, 0.35, 0xc8a878, a0.x1 - 2.8 + (i % 2) * 0.55, 0.15 + Math.floor(i / 2) * 0.3, a0.z0 + 2.4); // kardus arsip
+  const lampuArsip = new THREE.PointLight(0xffe8c0, 1.6, 9, 1.6); lampuArsip.position.set((a0.x0 + a0.x1) / 2, 2.8, (a0.z0 + a0.z1) / 2); scene.add(lampuArsip);
 }
 
 // ---------------------------------------------------------------- ruang manajer
@@ -1049,8 +1232,9 @@ function bangunRuangManajer(r, meja) {
   const LP = 2.0; // lebar bukaan pintu ganda
   const rm = ruangBertembok([
     [x0, z1, x1 + 0.1, z1], [x1, z0, x1, pintu.z - LP / 2], [x1, pintu.z + LP / 2, x1, z1],
-  ], () => kamera.position.z > z1 || kamera.position.x > x1);
-  const { penuh, pendek, T, TP } = rm;
+  ], { x: (x0 + x1) / 2, z: (z0 + z1) / 2 });
+  const { T, TP } = rm;
+  const { penuh, pendek } = grupPotong('x', x1, 1); // pintu, papan nama, dan piagam ikut tembok kanan
   kotak(0.24, T - 2.5, LP + 0.1, rm.mTembok, x1, 2.5 + (T - 2.5) / 2, pintu.z, penuh); // ambang atas pintu
   for (const s of [-1, 1]) kotak(0.26, 2.5, 0.1, mRangka, x1, 1.25, pintu.z + s * (LP / 2 + 0.03), penuh, false); // kusen
   // dua daun pintu kayu, terbuka ke dalam dan terlipat rapat ke tembok supaya jalan tetap lapang
