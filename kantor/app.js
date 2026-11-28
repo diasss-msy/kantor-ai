@@ -485,6 +485,14 @@ function bangunKota(lebar, dalam, dinding, r) {
     }
   }
 
+  // isi persegi w x d berpusat (x, z) dengan nx x nz gedung yang berdempetan
+  const TEPI = B / 2 - 1.1, GANG = 0.7;
+  function isiPetak(x, z, w, d, nx, nz) {
+    const sw = w / nx, sd = d / nz;
+    for (let a = 0; a < nx; a++) for (let b = 0; b < nz; b++) {
+      gedung(x - w / 2 + sw * (a + 0.5), z - d / 2 + sd * (b + 0.5), sw - GANG, sd - GANG);
+    }
+  }
   // blok ritel: dua minimarket di satu sisi, gedung kecil di sisi lain, reklame di pojok
   const RITEL = new Map([[`1,0`, 0], [`0,1`, 1], [`1,1`, 2], [`-1,0`, 3], [`0,-1`, 4], [`2,-1`, 5], [`-1,2`, 6], [`-2,-2`, 7], [`2,2`, 8], [`-2,1`, 9], [`3,0`, 10], [`0,3`, 11], [`-3,-1`, 12]]);
   // blok yang seluruhnya tempat parkir
@@ -498,22 +506,18 @@ function bangunKota(lebar, dalam, dinding, r) {
       // sisi toko menghadap jalan yang paling dekat kamera bawaan (+x/+z) bila mungkin
       const sx = (v % 2 === 0) ? 1 : -1;
       for (const [i2, dz] of [[0, -14], [1, 0], [2, 14]]) minimarket(cx + sx * (B / 2 - 5), cz + dz, sx, 0, v * 3 + i2);
-      for (const sz of [-1, 1]) gedung(cx - sx * 12, cz + sz * 12, 18 + r() * 4, 18 + r() * 4);
+      isiPetak(cx - sx * (TEPI - (2 * TEPI - 9.6) / 2), cz, 2 * TEPI - 9.6, 2 * TEPI, 2, 3); // gedung rapat di sisi lain toko
       const pz = v % 3 === 0 ? -1 : 1;
       reklame(cx + sx * (B / 2 - 1.6), cz + pz * (B / 2 - 1.6), Math.atan2(sx, pz), v);
       continue;
     }
+    // gedung berdempetan memenuhi blok, celahnya hanya sebesar gang
     const n = r();
-    if (n < 0.15) gedung(cx, cz, 32 + r() * 8, 32 + r() * 8);
-    else if (n < 0.5) {
-      // dua gedung memanjang
-      const sb = r() < 0.5;
-      for (const s of [-1, 1]) gedung(cx + (sb ? s * 13 : 0), cz + (sb ? 0 : s * 13), sb ? 20 : 40, sb ? 40 : 20);
-    } else if (n < 0.8) {
-      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) gedung(cx + sx * 12.5, cz + sz * 12.5, 18 + r() * 4, 18 + r() * 4);
-    } else { // enam gedung ramping
-      for (const sx of [-1, 0, 1]) for (const sz of [-1, 1]) gedung(cx + sx * 17, cz + sz * 12.5, 13 + r() * 2, 18 + r() * 4);
-    }
+    if (n < 0.12) isiPetak(cx, cz, 2 * TEPI, 2 * TEPI, 1, 1);
+    else if (n < 0.32) { const sb = r() < 0.5; isiPetak(cx, cz, 2 * TEPI, 2 * TEPI, sb ? 2 : 1, sb ? 1 : 2); }
+    else if (n < 0.6) isiPetak(cx, cz, 2 * TEPI, 2 * TEPI, 2, 2);
+    else if (n < 0.85) { const sb = r() < 0.5; isiPetak(cx, cz, 2 * TEPI, 2 * TEPI, sb ? 3 : 2, sb ? 2 : 3); }
+    else isiPetak(cx, cz, 2 * TEPI, 2 * TEPI, 3, 3);
   }
   // garis petak dan mobil terparkir digambar sebagai instance supaya ringan
   const kerangka = new THREE.Object3D();
