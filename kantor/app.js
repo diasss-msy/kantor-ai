@@ -335,6 +335,9 @@ function bangunKota(lebar, dalam, dinding, r) {
           const s = Math.max(0, bu - (Math.abs(ux) * b.w / 2 + Math.abs(uz) * b.d / 2) - tepi);
           batas = Math.max(3, lantai + tanE * s - 2);
         }
+        // gedung di sisi kamera dibuat rendah dan meninggi pelan-pelan, supaya jalan di antaranya terlihat
+        const eu = Math.abs(ux) * b.w / 2 + Math.abs(uz) * b.d / 2;
+        if (bu - eu > ru - 30 && Math.abs(bp) < rp + ep + 75) batas = Math.min(batas, 6 + 0.28 * Math.max(0, bu - eu - ru));
         b.target = Math.min(0, batas - b.h);
       }
       const y = b.g.position.y, t = b.target ?? 0;
