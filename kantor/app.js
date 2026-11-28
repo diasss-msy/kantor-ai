@@ -122,17 +122,17 @@ function teksturFasad(benih, kolom = 8, baris = 24) {
       g.fillStyle = '#16204a'; g.fillRect(0, b * 40 + 34, w, 6); // pelat lantai
       for (let k = 0; k < kolom; k++) {
         const n = r();
-        g.fillStyle = n < 0.12 ? '#e9c27a' : n < 0.17 ? '#7fc0e6' : n < 0.2 ? '#d99a4a' : '#121a3a';
-        g.fillRect(k * 32 + 4, b * 40 + 6, 24, 26);
+        g.fillStyle = n < 0.22 ? '#e9c27a' : n < 0.32 ? '#7fc0e6' : n < 0.38 ? '#d99a4a' : '#1f2c5c'; // jendela besar: lebih banyak yang menyala
+        g.fillRect(k * 32 + 3, b * 40 + 10, 26, 22); g.fillStyle = '#0a1028'; g.fillRect(k * 32 + 15, b * 40 + 10, 2, 22); // proporsi jendela kantor: lebar 6, tinggi 2.8 per lantai 5
       }
     }
   });
 }
 const FASAD = [11, 23, 37].map((b) => teksturFasad(b));
-/** Material fasad dengan pengulangan sesuai ukuran (1 jendela ≈ 0.9 x 1.25 satuan). */
+/** Material fasad dengan pengulangan sesuai ukuran (1 jendela ≈ 6 x 2.8 satuan, satu lantai 5 satuan, sama dengan jendela kantor). */
 function matFasad(i, w, h) {
   const t = FASAD[i % FASAD.length].clone(); t.needsUpdate = true;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(w / 4, h / 16);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(w / 60, h / 120);
   return new THREE.MeshStandardMaterial({ color: 0x8a96c0, map: t, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.4, roughness: 0.6 });
 }
 const lampuAtap = []; // lampu merah di puncak gedung yang berkedip
