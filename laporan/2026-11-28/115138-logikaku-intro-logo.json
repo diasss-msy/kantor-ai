@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T11:51:38+07:00",
+  "agen": "logikaku",
+  "tugas": "Buat animasi logo di landing page yang berlanjut ke animasi landing",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Intro 2,6 detik: kabel huruf L tergambar, LED menyala, tulisan LogikaKu masuk, lalu logo terbang ke hero dan halaman terbuka melingkar dari titik LED, disusul animasi landing. Sekali per tab, bisa dilewati, mati dengan Kurangi animasi. Semua uji Playwright lulus. Ikut PR #10.",
+  "hasil": ["PR #10 di repo diasss-msy/LogikaKu", "Library coding/logikaku/potret/intro-logo/intro-desktop.mp4", "Library coding/logikaku/potret/intro-logo/intro-hp.mp4"]
+}
