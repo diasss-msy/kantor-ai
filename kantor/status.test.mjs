@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   tanggalWIB, detikHari, formatJam, hariIniWIB, daftarTanggal, laporanPada,
-  statusPada, ringkasHari, tautan, tataMeja, rencanaRute, menganggur, LORONG_X, MANAJER_X, ruteLorong, sampahTerpenuh, PETUGAS,
+  statusPada, ringkasHari, tautan, tataMeja, rencanaRute, menganggur, LORONG_X, MANAJER_X, ruteLorong, sampahTerpenuh, PETUGAS, AREA,
 } from './status.js';
 
 const L = (waktu, agen, status) => ({ waktu, agen, status, tugas: 't', ringkasan: 'r', hasil: [] });
@@ -67,20 +67,21 @@ test('tautan hanya untuk http(s)', () => {
   assert.equal(tautan('PR #12 di repo perpustakaan'), null);
 });
 
-test('tata meja: manajer di belakang, lainnya tiga per baris', () => {
+test('tata meja: manajer di belakang, tiap departemen punya area sendiri', () => {
   const k = (id) => ({ id });
   const t = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja')]);
   const m = Object.fromEntries(t.meja.map((d) => [d.id, d]));
   assert.ok(m.manajer.z < m.coding.z);
-  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [-5, 0, 5]);
-  const t2 = tataMeja([k('manajer'), ...'abcde'.split('').map(k)]);
-  assert.equal(t2.meja.length, 6);
-  assert.deepEqual(t2.meja.slice(4).map((d) => d.x), [-2.5, 2.5]);
-  const t3 = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja'), k('maintenance')]);
-  const lain = t3.meja.slice(1);
-  assert.equal(new Set(lain.map((d) => d.z)).size, 1, 'empat departemen dalam satu baris');
-  assert.deepEqual(lain.map((d) => +d.x.toFixed(2)), [-6.3, -2.1, 2.1, 6.3]);
-  assert.equal(t3.dalam, t.dalam);
+  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [-8.5, 0, 8.5]);
+  const lima = tataMeja([k('manajer'), ...'abcde'.split('').map(k)]).meja.slice(1);
+  assert.equal(new Set(lima.map((d) => d.z)).size, 1, 'lima departemen dalam satu baris');
+  assert.deepEqual(lima.map((d) => d.x), [-17, -8.5, 0, 8.5, 17]);
+  // area departemen tidak saling tumpang tindih dan tidak menutup lorong samping
+  for (let i = 1; i < lima.length; i++) assert.ok(lima[i].x - lima[i - 1].x >= AREA.lebar, `area ${i}`);
+  assert.ok(lima.at(-1).x + AREA.lebar / 2 < LORONG_X - 0.5);
+  const enam = tataMeja([k('manajer'), ...'abcdef'.split('').map(k)]).meja.slice(1);
+  assert.equal(enam[5].z - enam[0].z, AREA.jarakZ, 'departemen keenam di baris berikutnya');
+  assert.equal(enam[5].x, 0);
 });
 
 test('rute jalan: kursi -> lorong belakang meja -> lorong samping -> tujuan', () => {

@@ -72,26 +72,27 @@ export function tautan(teks) {
   }
 }
 
+/** Lebar satu area departemen (bersekat) dan jarak antarbaris area. */
+export const AREA = { lebar: 7.6, dalam: 5, jarakX: 8.5, jarakZ: 9 };
+
 /**
- * Posisi meja: manajer di baris belakang, karyawan lain di depannya
- * (empat sebaris kalau tepat empat, selain itu tiga per baris).
- * Hasil: { meja: [{ id, x, z }], lebar, dalam } dalam satuan dunia.
+ * Posisi meja: manajer di ruangannya (seperempat lantai di belakang kiri),
+ * departemen lain masing-masing punya area bersekat sendiri, lima per baris,
+ * berjajar di depan ruang manajer.
+ * Hasil: { meja: [{ id, x, z }], lebar, dalam, ruangManajer } dalam satuan dunia.
  */
 export function tataMeja(karyawan) {
   const manajer = karyawan.filter((k) => k.id === 'manajer');
   const lain = karyawan.filter((k) => k.id !== 'manajer' && k.id !== PETUGAS);
   const petugas = karyawan.filter((k) => k.id === PETUGAS);
-  const perBaris = lain.length === 4 ? 4 : 3; // empat departemen muat sebaris
-  const jarak = perBaris === 4 ? 4.2 : 5;
+  const perBaris = 5;
   const dalam = DALAM;
   const meja = [];
-  // manajer punya ruangan sendiri berdinding kaca: seperempat lantai di belakang kiri
   for (const k of manajer) meja.push({ id: k.id, x: MANAJER_X, z: -dalam / 4 });
-  // departemen di separuh depan, tepat di depan ruang manajer
-  const z0 = manajer.length ? 4 : -dalam / 2 + 3.8;
+  const z0 = manajer.length ? 5 : -dalam / 2 + 4;
   lain.forEach((k, i) => {
     const r = Math.floor(i / perBaris), sisa = Math.min(perBaris, lain.length - r * perBaris), c = i % perBaris;
-    meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * jarak, z: z0 + r * 4.4 });
+    meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * AREA.jarakX, z: z0 + r * AREA.jarakZ });
   });
   // petugas kebersihan tidak punya meja: ia mangkal di troli kebersihan di sisi kiri depan
   for (const k of petugas) meja.push({ id: k.id, x: POS_PETUGAS.x, z: dalam / 2 - POS_PETUGAS.dariDepan });
