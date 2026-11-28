@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T10:42:34+07:00",
+  "agen": "maintenance",
+  "tugas": "Revisi layout kantor 3D: dekorasi ruang manajer, pantry tanpa dinding, ruang rapat menempel dinding kiri, lift menjorok ke dalam, ruang kebersihan, pintu ganda manajer di tengah",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Ruang manajer diberi banyak dekorasi (lukisan, tirai, rak buku, akuarium, globe, bendera, sudut tamu, golf mini) dan pintu ganda di tengah tembok kanan. Pantry terbuka, ruang rapat menempel dinding kiri, lift jadi inti lift dengan ceruk pintu, ruang kebersihan di pojok kanan depan. Jalur jalan disesuaikan. Tes 23 + 17 lulus. Menunggu merge PR #14.",
+  "hasil": ["PR #14 di repo kantor-ai", "Library: coding/kantor-3d/revisi-layout.png", "Library: coding/kantor-3d/revisi-ruang-manajer.png", "Library: coding/kantor-3d/revisi-lift-kebersihan.png"]
+}
