@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T11:40:46+07:00",
+  "agen": "maintenance",
+  "tugas": "Kurangi tempat parkir di kota sekitar kantor 3D jadi dua dan ganti sisanya dengan gedung tinggi",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Tempat parkir tinggal dua blok dekat gedung kantor. Lahan parkir lain, termasuk parkir kecil di blok minimarket, diganti gedung yang lebih tinggi, tetapi tingginya tetap dibatasi supaya isi kantor terlihat. Tes 23 + 17 lulus.",
+  "hasil": ["PR #14 di repo kantor-ai", "Library: coding/kantor-3d/kota-gedung-tinggi.png"]
+}
