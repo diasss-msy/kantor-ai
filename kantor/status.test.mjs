@@ -72,7 +72,7 @@ test('tata meja: manajer dekat jendela belakang, departemen di belakang kanan', 
   const t = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja')]);
   const m = Object.fromEntries(t.meja.map((d) => [d.id, d]));
   assert.ok(m.manajer.z < -t.dalam / 2 + 5, 'meja manajer dekat jendela belakang');
-  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [4.8, 12, 19.2]);
+  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x].map((x) => +x.toFixed(2)), [4.4, 11, 17.6]);
   const lima = tataMeja([k('manajer'), ...'abcde'.split('').map(k)]).meja.slice(1);
   assert.equal(lima[3].z - lima[0].z, AREA.jarakZ, 'departemen keempat di baris berikutnya');
   for (const d of lima) {
@@ -109,16 +109,19 @@ test('ruang manajer: meja manajer di dalamnya, meja lain di luarnya', () => {
   assert.equal(tataMeja([k('kuliah')]).ruangManajer, null);
 });
 
-test('rute manajer keluar lewat pintu ruangannya', () => {
+test('rute manajer keluar lewat pintu ganda di tengah tembok kanan', () => {
   const t = tataMeja([{ id: 'manajer' }, { id: 'kuliah' }]);
-  const m = t.meja[0], pintu = t.ruangManajer.pintu;
-  const rute = rencanaRute({ x: m.x, z: m.z - 0.85 }, { x: 5.6, z: -5.2 }, pintu);
-  const i = rute.findIndex((p) => p.x === pintu.x && p.z > pintu.z);
+  const m = t.meja[0], r = t.ruangManajer, pintu = r.pintu;
+  assert.equal(pintu.x, r.x1);
+  assert.equal(pintu.z, (r.z0 + r.z1) / 2, 'pintu di tengah tembok');
+  const rute = rencanaRute({ x: m.x, z: m.z - 0.85 }, { x: 5.6, z: 8 }, pintu);
+  const i = rute.findIndex((p) => p.x > pintu.x && p.z === pintu.z);
   assert.ok(i > 0, 'melewati pintu');
-  // sebelum pintu semua titik di dalam ruangan, sesudahnya di luar atau di lorong samping
-  for (const p of rute.slice(0, i)) assert.ok(p.z < pintu.z && p.x <= t.ruangManajer.x1, JSON.stringify(p));
+  // sebelum pintu semua titik di dalam ruangan, sesudahnya di luar
+  for (const p of rute.slice(0, i)) assert.ok(p.x < pintu.x && p.z < r.z1, JSON.stringify(p));
+  for (const p of rute.slice(i)) assert.ok(p.x > pintu.x, JSON.stringify(p));
   for (let j = 1; j < rute.length; j++) assert.ok(rute[j].x === rute[j - 1].x || rute[j].z === rute[j - 1].z, `ruas ${j}`);
-  assert.deepEqual(rute.at(-1), { x: 5.6, z: -5.2 });
+  assert.deepEqual(rute.at(-1), { x: 5.6, z: 8 });
 });
 
 test('petugas kebersihan tidak dapat meja di baris departemen', () => {
@@ -133,14 +136,15 @@ test('petugas kebersihan tidak dapat meja di baris departemen', () => {
 
 test('rute petugas lewat lorong kanan, dan lewat pintu ke ruang manajer', () => {
   const lurus = (r) => r.every((p, i) => i === 0 || p.x === r[i - 1].x || p.z === r[i - 1].z);
-  const r = ruteLorong({ x: -5.6, z: 4.4 }, { x: 1.25, z: -2.4 });
+  const r = ruteLorong({ x: 23.2, z: 22 }, { x: 10, z: -12 });
   assert.ok(lurus(r));
   assert.ok(r.some((p) => p.x === LORONG_X));
-  const pintu = { x: 2.2, z: -2.85 };
-  const m = ruteLorong({ x: -5.6, z: 4.4 }, { x: 0.4, z: -6.3 }, pintu);
+  const pintu = { x: 0, z: -12.5 };
+  const m = ruteLorong({ x: 23.2, z: 22 }, { x: -10.9, z: -22.9 }, pintu);
   assert.ok(lurus(m));
-  assert.ok(m.some((p) => p.x === pintu.x && p.z > pintu.z), 'lewat depan pintu');
-  assert.deepEqual(m.at(-1), { x: 0.4, z: -6.3 });
+  assert.ok(m.some((p) => p.x > pintu.x && p.z === pintu.z), 'lewat depan pintu');
+  assert.ok(m.some((p) => p.x < pintu.x && p.z === pintu.z), 'masuk lewat pintu');
+  assert.deepEqual(m.at(-1), { x: -10.9, z: -22.9 });
 });
 
 test('tempat sampah terpenuh dikosongkan duluan', () => {
