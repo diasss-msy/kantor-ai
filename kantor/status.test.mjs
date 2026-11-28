@@ -67,21 +67,20 @@ test('tautan hanya untuk http(s)', () => {
   assert.equal(tautan('PR #12 di repo perpustakaan'), null);
 });
 
-test('tata meja: manajer di belakang, tiap departemen punya area sendiri', () => {
+test('tata meja: manajer dekat jendela belakang, departemen di belakang kanan', () => {
   const k = (id) => ({ id });
   const t = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja')]);
   const m = Object.fromEntries(t.meja.map((d) => [d.id, d]));
-  assert.ok(m.manajer.z < m.coding.z);
-  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [-8.5, 0, 8.5]);
+  assert.ok(m.manajer.z < -t.dalam / 2 + 5, 'meja manajer dekat jendela belakang');
+  assert.deepEqual([m.kuliah.x, m.coding.x, m.kerja.x], [4.8, 12, 19.2]);
   const lima = tataMeja([k('manajer'), ...'abcde'.split('').map(k)]).meja.slice(1);
-  assert.equal(new Set(lima.map((d) => d.z)).size, 1, 'lima departemen dalam satu baris');
-  assert.deepEqual(lima.map((d) => d.x), [-17, -8.5, 0, 8.5, 17]);
-  // area departemen tidak saling tumpang tindih dan tidak menutup lorong samping
-  for (let i = 1; i < lima.length; i++) assert.ok(lima[i].x - lima[i - 1].x >= AREA.lebar, `area ${i}`);
-  assert.ok(lima.at(-1).x + AREA.lebar / 2 < LORONG_X - 0.5);
-  const enam = tataMeja([k('manajer'), ...'abcdef'.split('').map(k)]).meja.slice(1);
-  assert.equal(enam[5].z - enam[0].z, AREA.jarakZ, 'departemen keenam di baris berikutnya');
-  assert.equal(enam[5].x, 0);
+  assert.equal(lima[3].z - lima[0].z, AREA.jarakZ, 'departemen keempat di baris berikutnya');
+  for (const d of lima) {
+    assert.ok(d.x - AREA.lebar / 2 > 0.5, 'tidak menempel ruang manajer');
+    assert.ok(d.x + AREA.lebar / 2 < LORONG_X - 0.5, 'lorong kanan tetap bebas');
+    assert.ok(d.z + AREA.dalam - 1 < -0.5, 'area tetap di separuh belakang');
+  }
+  for (let i = 1; i < 3; i++) assert.ok(lima[i].x - lima[i - 1].x >= AREA.lebar, `area ${i}`);
 });
 
 test('rute jalan: kursi -> lorong belakang meja -> lorong samping -> tujuan', () => {
@@ -94,7 +93,7 @@ test('rute jalan: kursi -> lorong belakang meja -> lorong samping -> tujuan', ()
   // setiap ruas lurus (sejajar sumbu x atau z)
   for (let i = 1; i < r.length; i++) assert.ok(r[i].x === r[i - 1].x || r[i].z === r[i - 1].z, `ruas ${i}`);
   const kiri = rencanaRute({ x: 2.1, z: 2.65 }, { x: -5.6, z: -3.5 });
-  assert.equal(kiri[3].x, -LORONG_X);
+  assert.equal(kiri[3].x, LORONG_X, 'selalu lewat lorong kanan');
 });
 
 test('ruang manajer: meja manajer di dalamnya, meja lain di luarnya', () => {
@@ -105,8 +104,8 @@ test('ruang manajer: meja manajer di dalamnya, meja lain di luarnya', () => {
   const m = t.meja.find((d) => d.id === 'manajer');
   assert.equal(m.x, MANAJER_X);
   assert.ok(di(m), 'meja manajer di dalam ruangan');
-  // kursi dan lorong belakang kursi karyawan lain tetap di luar dinding kaca
-  for (const d of t.meja.filter((d) => d.id !== 'manajer')) assert.ok(d.z - 0.85 - 1.05 > r.z1 + 0.3, d.id);
+  // meja karyawan lain tetap di luar dinding ruang manajer
+  for (const d of t.meja.filter((d) => d.id !== 'manajer')) assert.ok(d.x - AREA.lebar / 2 > r.x1, d.id);
   assert.equal(tataMeja([k('kuliah')]).ruangManajer, null);
 });
 
@@ -127,16 +126,16 @@ test('petugas kebersihan tidak dapat meja di baris departemen', () => {
   const t = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja'), k(PETUGAS)]);
   const tanpa = tataMeja([k('manajer'), k('kuliah'), k('coding'), k('kerja')]);
   const p = t.meja.find((d) => d.id === PETUGAS);
-  assert.ok(p.x < -5 && p.z > 0, 'mangkal di kiri depan');
+  assert.ok(p.x > 5 && p.z > 0, 'mangkal di kanan depan');
   assert.deepEqual(t.meja.filter((d) => d.id !== PETUGAS), tanpa.meja);
   assert.equal(t.dalam, tanpa.dalam);
 });
 
-test('rute petugas lewat lorong kiri, dan lewat pintu ke ruang manajer', () => {
+test('rute petugas lewat lorong kanan, dan lewat pintu ke ruang manajer', () => {
   const lurus = (r) => r.every((p, i) => i === 0 || p.x === r[i - 1].x || p.z === r[i - 1].z);
   const r = ruteLorong({ x: -5.6, z: 4.4 }, { x: 1.25, z: -2.4 });
   assert.ok(lurus(r));
-  assert.ok(r.some((p) => p.x === -LORONG_X));
+  assert.ok(r.some((p) => p.x === LORONG_X));
   const pintu = { x: 2.2, z: -2.85 };
   const m = ruteLorong({ x: -5.6, z: 4.4 }, { x: 0.4, z: -6.3 }, pintu);
   assert.ok(lurus(m));

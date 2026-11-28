@@ -73,30 +73,29 @@ export function tautan(teks) {
 }
 
 /** Lebar satu area departemen (bersekat) dan jarak antarbaris area. */
-export const AREA = { lebar: 7.6, dalam: 5, jarakX: 8.5, jarakZ: 9 };
+export const AREA = { lebar: 6.8, dalam: 5, jarakX: 7.2, jarakZ: 9.5, perBaris: 3 };
 
 /**
  * Posisi meja: manajer di ruangannya (seperempat lantai di belakang kiri),
- * departemen lain masing-masing punya area bersekat sendiri, lima per baris,
- * berjajar di depan ruang manajer.
+ * mejanya dekat jendela belakang. Departemen lain masing-masing punya area
+ * bersekat sendiri di seperempat lantai belakang kanan, tiga per baris.
  * Hasil: { meja: [{ id, x, z }], lebar, dalam, ruangManajer } dalam satuan dunia.
  */
 export function tataMeja(karyawan) {
   const manajer = karyawan.filter((k) => k.id === 'manajer');
   const lain = karyawan.filter((k) => k.id !== 'manajer' && k.id !== PETUGAS);
   const petugas = karyawan.filter((k) => k.id === PETUGAS);
-  const perBaris = 5;
-  const dalam = DALAM;
+  const dalam = DALAM, lebar = LEBAR;
   const meja = [];
-  for (const k of manajer) meja.push({ id: k.id, x: MANAJER_X, z: -dalam / 4 });
-  const z0 = manajer.length ? 5 : -dalam / 2 + 4;
+  for (const k of manajer) meja.push({ id: k.id, x: MANAJER_X, z: -dalam / 2 + 4 });
+  const { perBaris, jarakX, jarakZ } = AREA;
+  const pusatX = lebar / 4 - 0.5, z0 = -dalam / 2 + 5;
   lain.forEach((k, i) => {
     const r = Math.floor(i / perBaris), sisa = Math.min(perBaris, lain.length - r * perBaris), c = i % perBaris;
-    meja.push({ id: k.id, x: (c - (sisa - 1) / 2) * AREA.jarakX, z: z0 + r * AREA.jarakZ });
+    meja.push({ id: k.id, x: pusatX + (c - (sisa - 1) / 2) * jarakX, z: z0 + r * jarakZ });
   });
-  // petugas kebersihan tidak punya meja: ia mangkal di troli kebersihan di sisi kiri depan
+  // petugas kebersihan tidak punya meja: ia mangkal di troli kebersihan di sisi kanan depan
   for (const k of petugas) meja.push({ id: k.id, x: POS_PETUGAS.x, z: dalam / 2 - POS_PETUGAS.dariDepan });
-  const lebar = LEBAR;
   const ruangManajer = manajer.length ? {
     x0: -lebar / 2, x1: 0, z0: -dalam / 2, z1: 0,
     pintu: { x: -1.5, z: 0 },
@@ -112,12 +111,12 @@ export const LORONG_X = LEBAR / 2 - 1.3;
 
 /**
  * Rute berjalan dari kursi ke tujuan: mundur ke lorong di belakang meja,
- * menyusuri lorong itu ke lorong samping (kiri atau kanan, yang lebih dekat
- * ke tujuan), lalu ke tujuan. Hasil: daftar titik { x, z } diawali kursi.
+ * menyusuri lorong itu ke lorong samping kanan (sisi kiri tertutup ruang
+ * manajer dan ruang rapat), lalu ke tujuan. Hasil: daftar titik { x, z } diawali kursi.
  */
 export function rencanaRute(kursi, tujuan, pintu = null) {
   const lorongZ = kursi.z - 1.05; // tepat di belakang sandaran kursi
-  const cx = tujuan.x >= 0 ? LORONG_X : -LORONG_X;
+  const cx = LORONG_X;
   const titik = [
     { x: kursi.x, z: kursi.z },
     { x: kursi.x + 0.6, z: kursi.z }, // geser ke samping kursi dulu
@@ -142,15 +141,15 @@ export function menganggur(status) {
 
 /** id petugas kebersihan (cleaning service) di karyawan.json. */
 export const PETUGAS = 'kebersihan';
-/** Tempat mangkal petugas kebersihan: di depan troli, dekat dinding kiri. */
-export const POS_PETUGAS = { x: -LORONG_X + 0.1, dariDepan: 4 };
+/** Tempat mangkal petugas kebersihan: di depan troli, dekat dinding kanan. */
+export const POS_PETUGAS = { x: LORONG_X - 0.1, dariDepan: 4 };
 
 /**
- * Rute petugas kebersihan dari titik a ke titik b lewat lorong samping kiri.
+ * Rute petugas kebersihan dari titik a ke titik b lewat lorong samping kanan.
  * Kalau b ada di ruang manajer, lewat pintunya. Setiap ruas sejajar sumbu.
  */
 export function ruteLorong(a, b, pintu = null) {
-  const cx = -LORONG_X;
+  const cx = LORONG_X;
   const t = [{ x: a.x, z: a.z }, { x: cx, z: a.z }];
   if (pintu) {
     const luar = pintu.z + 0.5;
