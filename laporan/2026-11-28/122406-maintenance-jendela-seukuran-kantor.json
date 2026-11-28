@@ -1,0 +1,9 @@
+{
+  "waktu": "2026-11-28T12:24:06+07:00",
+  "agen": "maintenance",
+  "tugas": "Samakan ukuran jendela gedung kota dengan jendela di ruang kantor 3D",
+  "dipesan_oleh": "syahrial",
+  "status": "selesai",
+  "ringkasan": "Titik warna-warni di gedung adalah jendela yang menyala. Ukurannya kini sama dengan jendela kantor: sekitar 6 x 2,8 satuan dengan tinggi lantai 5 satuan, ditambah bingkai tengah. Karena jendelanya lebih besar dan lebih sedikit, porsi jendela yang menyala dinaikkan supaya kota tetap hidup. Tes 23 + 17 lulus.",
+  "hasil": ["PR #14 di repo kantor-ai", "Library: coding/kantor-3d/jendela-besar-dekat.png", "Library: coding/kantor-3d/jendela-besar-jauh.png"]
+}
